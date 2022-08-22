@@ -1,0 +1,102 @@
+version: "3"
+services:
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile.SQL
+    container_name: POSTGRES_NAME
+    volumes:
+      - Data-volume:/var/lib/postgresql/data/:rw
+    environment:
+      - POSTGRES_USER=tonyliu666
+      - POSTGRES_PASSWORD=t870101
+      - POSTGRES_HOST=POSTGRES_NAME 
+      - POSTGRES_PORT=5432 
+      - POSTGRES_DB=db 
+      - POSTGRES_INITDB_ARGS= --encoding=UTF-8
+    # env_file:
+    #   - database.env
+    restart: unless-stopped
+    expose:
+      - "5432"
+    networks: 
+      - turingmysql
+      - tracing
+  chrome:
+    image: test
+    shm_size: 4gb
+    container_name: CHROME
+    expose : 
+      - "4444"
+    ports:
+      - "4444:4444"
+    networks:
+      - chrome_net
+      - tracing
+    # add selenium to jaeger
+    command: >
+      sh -c "
+      ./start-grid-standalone.sh
+      "
+    volumes:
+      - "grid:/sel:rw"
+  flask-web:
+    image: main
+    container_name: flask-web
+    depends_on:
+      - db
+      - chrome
+    links:
+      - db
+      - chrome
+    volumes:
+      # - type: volume
+      #   # source: Vol 
+      #   target: /app
+      # - type: bind
+      #   source: /c/Projects/Go/src/kubernetes-service-mesh/test-storage 
+      #   target: /app
+      - ".:/app:rw"
+    command: > 
+      sh -c " 
+        python /app/web/src/main.py 
+      "  
+    # add open telemetry in python 
+    environment:
+      - POSTGRES_USER=tonyliu666
+      - POSTGRES_PASSWORD=t870101
+      - POSTGRES_HOST=POSTGRES_NAME
+      - POSTGRES_PORT=5432 
+      - POSTGRES_DB=db
+      - SELENIUM_REMOTE_HOST=chrome
+    ports:
+      - "8080:80"
+    networks: 
+      - turingmysql
+      - chrome_net
+      - tracing
+      # - flask
+      # - sel_net
+  jaeger:
+    container_name: Jaeger
+    image: jaegertracing/all-in-one:latest
+    networks:
+      - tracing
+    ports:
+    - 16686:16686
+    - 14250:14250
+    volumes:
+      - Jaeger-vol:/var/lib/jaeger
+volumes:
+  Data-volume:
+  # Vol:
+  Jaeger-vol:
+  grid:
+networks:
+  turingmysql:
+  # flask:
+  #   driver: bridge
+  chrome_net:
+  tracing:
+    name: tracing
+  

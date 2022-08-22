@@ -1,0 +1,6 @@
+myporject/
+__pycache__
+.vscode 
+assets 
+data.sql 
+include 

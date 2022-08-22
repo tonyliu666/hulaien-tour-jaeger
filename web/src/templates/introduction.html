@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<!-- 東大門夜市 -->
+<head>
+    <link rel="stylesheet" href="../static/styles/Align.css">
+    <link rel="stylesheet" href="../static/styles/Hualien_spot.css">
+    <title>{{data[-2]}}</title>
+</head>
+<body>
+    <!-- <h3>{{data[-1]}}</h3> -->
+    <nav id="fixed_nav">
+        <div class="nav_button"><span></span>
+            <div id="pc_nav">
+                <ul id="nav" class="nav">
+                    <li class="tab-1"><a href="/Hualien/spot">花蓮景點</a></li>
+                    <li class="tab-2"><a href="/Hualien/hotel">花蓮飯店</a></li>
+                    <li class="tab-3"><a href="/Hualien/tour">主題之旅</a></li>
+                    <li class="tab-4"><a href="/Hualien/snack">美食特產</a></li>
+                    <li class="tab-5"><a href="/Hualien/transportation">交通資訊</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main">
+        <div class='container'>
+            <div id="title-tab"><dl><dd><a href="/Hualien" title="花蓮">花蓮</a></dd><dd>&gt;</dd><dd><a href="/Hualien/spot/" title="花蓮景點">花蓮景點</a></dd><dd>&gt;</dd><dd>{{data[-2]}}</dd></dl></div>
+            <h2 class="bottom-line"><b>花蓮景點</b></h2>
+            <div id="scroll-box" class="scroll-box">
+                <div id="main_m">
+                    <h2>{{data[-2]}}</h2>
+                    <div class="text">
+                        <h4 id="fun">{{data[-2]}}簡介</h4>
+                        {{data[0]}}
+                        <br>
+                        <br>
+                    </div>
+                    <div class="point_data">
+                        <div class="address">
+                            <h3>地址:</h3>
+                            <p id="pig">
+                                {%if data[-1] == 6%}
+                                <a target="_blank" href="{{data[-3]}}" title="Address">
+                                    <span>{{data[1]}}</span>
+                                </a>
+                                {%elif data[-1]==7%}
+                                <a target="_blank" href="{{data[-3]}}" title="Address">
+                                    <span>{{data[1]}}</span>
+                                </a>
+                                {%else%}
+                                <h3>None</h3>
+                                {%endif%}
+                            </p>
+                        </div>
+                        <div>
+                            <div class="point">
+                                {%if data[-1]==6%}
+                                <h3>時間/交通資訊/費用</h3>
+                                <div class="text">
+                                    <p id="pig">
+                                        {{data[2]}}
+                                    </p>
+                                </div>
+                                {%elif data[-1] ==7%}
+                                <h3>營業時間</h3>
+                                <div class="text">
+                                    <p id="pig">
+                                        {{data[2]}}
+                                    </p>
+                                </div>
+                                <h3>時間/交通資訊/費用</h3>
+                                <div class="text">
+                                    <p id="pig">
+                                        {{data[3]}}
+                                    </p>
+                                </div>
+                                {%elif data[-1]==5%}
+                                <h3>時間/交通資訊/費用</h3>
+                                <div class="text">
+                                    <p id="pig">
+                                        <span>{{data[2]}}</span>
+                                        <span>{{data[1]}}</span>
+                                    </p>
+                                </div>
+                                {%else%}
+                                <h3>None</h3>
+                                {%endif%}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="side_hotel">
+                        <h2>需要額外幫您找附近旅館嗎?</h2>
+                        
+                        <a href="/booking/{{data[-2]}}">
+                            <span>點擊這邊</span>
+                        </a>
+                    </div>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+
+                    <div class="main">
+                        {% block content %}
+                        {%if set%}
+                        {%if sel|length == 0 %}
+                        <h2>we can't recommend any hotel for you ,sorry.</h2>
+                        {%else%}
+                        <h3 id="title-tab">{{text}}</h3>
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        {%for i in sel%}
+                        {{i|safe}} 
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        {%endfor%}
+                        {%endif%}
+                        {%endif%}
+                        {% endblock %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+                            
+</body>

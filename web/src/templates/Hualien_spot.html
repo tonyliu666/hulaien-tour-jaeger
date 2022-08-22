@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="../static/styles/Align.css">
+    <link rel="stylesheet" href="../static/styles/Hualien_spot.css">
+    <title>Hualien spot</title>
+</head>
+
+<body>
+    <nav id="fixed_nav">
+        <div class="nav_button"><span></span>
+            <div id="pc_nav">
+                <ul id="nav" class="nav">
+                    <li class="tab-1"><a href="/Hualien/spot">花蓮景點</a></li>
+                    <li class="tab-2"><a href="/Hualien/hotel">花蓮飯店</a></li>
+                    <li class="tab-4"><a href="/Hualien/food">美食特產</a></li>
+                    <li class="tab-5"><a href="/Hualien/transportation">交通資訊</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <h2 class="bottom-line"><b>花蓮景點</b></h2>
+
+    <div id="searchbox">
+        <div class="search_box right">
+            <form action="/Hualien/spot" METHOD="POST" id="cse-search-box">
+                <div class="focus">
+                    <input type="text" name="content" id="content"placeholder="景點名稱關鍵字">
+                    <button type="submit" name="s" value="1"></button>
+                    <input type="hidden" name="m" value="0">
+                    <div class="clear"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+
+    <div id="tabs-content">
+        <div class="clear"></div>
+        <ul class="nav_county">
+            <!-- <form action="/Hualien/spot" METHOD="POST"> -->
+                <li><a href="/Hualien" name="花蓮">回主頁</a></li>
+                <li><a href="/Hualien/全部" name="全部"><span class="icon-menu"></span>全部</a></li>
+                <li><a href="/Hualien/玉里鎮" name="83">玉里鎮</a></li>
+                <li class="btnon"><a href="/Hualien/光復鄉" name="84">光復鄉</a></li>
+                <li><a href="/Hualien/吉安鄉" name="85">吉安鄉</a></li>
+                <li class=""><a href="/Hualien/秀林鄉" name="86">秀林鄉</a></li>
+                <li class=""><a href="/Hualien/卓溪鄉" name="87">卓溪鄉</a></li>
+                <li class=""><a href="/Hualien/花蓮市" name="88">花蓮市</a></li>
+                <li><a href="/Hualien/富里鄉" name="89">富里鄉</a></li>
+                <li><a href="/Hualien/新城鄉" name="90">新城鄉</a></li>
+                <li><a href="/Hualien/瑞穗鄉" name="91">瑞穗鄉</a></li>
+                <li><a href="/Hualien/萬榮鄉" name="92">萬榮鄉</a></li>
+                <li><a href="/Hualien/壽豐鄉" name="93">壽豐鄉</a></li>
+                <li><a href="/Hualien/鳳林鎮" name="94">鳳林鎮</a></li>
+                <li><a href="/Hualien/豐濱鄉" name="95">豐濱鄉</a></li>
+            <!-- </form> -->
+        </ul>
+        <div class="clear"></div>
+        <div class="list-tab">
+            <aricle id="result"class="result_view2 result_attraction" style="min-height: 70px;">
+                {% for todo in data %}
+                <section class="grid_list">
+                    <a href="/{{todo.title}}/{{todo.link}}" title="{{todo.title}}" class="grid_link">
+                    <figure class="grid_pic"><img style="width:auto ;height:auto"src="{{todo.imglink}}" alt="{{todo.title}}"></figure>
+                    <h3 class="grid_name">{{todo.title}}</h3>
+                    <div class="grid_address">{{todo.loc}}</div>
+                    <div class="grid_clear"></div>
+                    </a>
+                </section>
+                {% endfor %}
+            </aricle>
+        </div>
+        <div class="clear"></div>
+    </div>
+</body>
+
+</html>

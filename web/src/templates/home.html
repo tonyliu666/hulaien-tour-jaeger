@@ -1,0 +1,54 @@
+{% extends "base.html" %} 
+{% block title%} 
+    Home Page
+{% endblock%} 
+
+{% block content %} 
+    <h1>Home Page</h1>
+    <span style="background-color:khaki;color:cornflowerblue">(測試版----目前僅花蓮旅遊網啟用中)</span>
+    <div class="flex-container">
+        <section class="grid_list t1">
+            <p alignments = "center">
+                <a href="/Taipei" class="grid_link">
+                    <button type='button'>
+                    <image style="width:200px;height:200px;"src="{{url_for('static',filename='images/Taipei.jpg')}}"alt="台北旅遊網"
+                    >
+                    <h3 class="grid_name">台北旅遊網</h3> 
+                    </image>
+                    </button>
+                </a>  
+            </p>
+        </section>
+        <section class="grid_list t2">
+            <p alignments = "center">
+                <a href="/Yilan" class="grid_link">
+                    <button type='button'>
+                    <image style="max-width:200px;height:200px;"src="{{url_for('static',filename='images/yilan.jpg')}}"
+                    >
+                    <h3 class="grid_name">宜蘭旅遊網</h3> 
+                    </image>
+                    </button>
+                </a>  
+            </p>
+            
+        </section>
+        <section class="grid_list t3">
+            <p alignments = "center">
+                <a href="/Hualien" class="grid_link">
+                    <button type='button'>
+                    <image style="max-width:200px;height:200px;" src="{{url_for('static',filename='images/Hualien.jpg')}}"
+                    >
+                    <h3 class="grid_name">花蓮旅遊網</h3> 
+                    </image>
+                    </button>
+                </a>  
+            </p>
+        </section>
+    </div>
+    
+    
+{% endblock %}
+
+
+
+

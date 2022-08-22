@@ -1,0 +1,141 @@
+.search_bar{
+    padding: 12px 0 0 0;  
+}
+#here {
+    list-style: none ;
+    display : flex;
+    justify-content:center;
+}
+#rooms_search_bar{
+    display:block;
+}
+#hello {
+    display: list-item;
+    text-align: -webkit-match-parent;
+    flex : 10
+}
+input[type="hidden" i] {
+    appearance: none;
+    background-color: initial;
+    cursor: default;
+    display: none !important;
+    padding: initial;
+    border: initial;
+    
+}
+#rooms_search_bar input.btns {
+    flex-grow: 2;
+    border: 0;
+    cursor: pointer;
+    background: darkkhaki;
+    color: #000;
+    font-size: 1.1em;
+    flex: 4
+}
+#OrderDay{
+    background-color: orange;
+    width : 450px;
+    height: 20px;
+    border-radius: 1em;
+}
+option {
+    font-weight: normal;
+    display: block;
+    white-space: nowrap;
+    min-height: 1.2em;
+    padding: 0px 2px 1px;
+}
+.slide.section > img{
+    display:block;
+    /* width: 100%;
+    height:50%; */
+    object-fit: cover;
+    object-position: center;
+}
+.grid{
+    display: flex;
+    flex-direction: column;
+    /* height: 100%; */
+    height: auto
+}
+.grid.pic{
+    position:relative;
+    flex: 7 ;
+}
+.SCkDmc {
+    background-color: #e0e0e0;
+}
+.dBuxib {
+    display: block;
+    overflow: hidden;
+    position: relative;
+}
+.nLGrz {
+    visibility: hidden;
+    width: 100%;
+}
+.GwjAi {
+    display: flex;
+    flex-direction: column;
+    box-flex: 1;
+    flex-grow: 1;
+    padding: 12px;
+    flex: 2 ;
+}
+.rbj0Ud {
+    align-items: flex-end;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+.AdWm1c {
+    font: 400 16px/20px "Google Sans",Roboto,Arial,sans-serif;
+    letter-spacing: .1px;
+    color: var(--travel-color-token-typography-subhead);
+}
+.skFvHc {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+    white-space: normal;
+    max-height: 60px;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+.tP34jb {
+    color: #757575;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    margin-bottom: 8px;
+}
+.nFoFM {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+    white-space: normal;
+    color: #757575;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    max-height: 48px;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+.grid-img{
+    height:max-content;
+    width:max-content;
+}
+#fixed_nav{
+    flex : 2;
+}
+section{
+    display:flex;
+    flex : 8 ; 
+}
+div.gap{
+    margin-top:400px
+}

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="../static/styles/Align.css">
+    <link rel="stylesheet" href="../static/styles/topic_tour.css">
+    <script src="{{url_for('static', filename='styles/script.js')}}"defer ></script>
+    <title>Hualien</title>
+</head>
+
+<body>
+   <style>
+        .carousel-item{
+            height:20rem;
+            background:#777;
+            color:white;
+            position:absolute;
+        }
+        .container{
+            position: absolute;
+            bottom :0;
+            left:0;
+            right:0;
+            padding-bottom:50px;
+        }
+   </style>
+   
+        <section aria-label="Newest Photos">
+            <div class="carousel"data-carousel>
+                <button class="carousel-button prev"data-carousel-button="prev" > &#8656;</button>
+                <button class="carousel-button next"data-carousel-button="next">&#8658;</button>
+                
+                <ul data-slides>
+                    <li class="slide" data-active>
+                        
+                        <img src="{{url_for('static',filename='slide/1.jpg')}}" alt="Nature Image #1"
+                        />
+                        <h1 class="font">花蓮旅遊網</h1>
+                    </li>
+                    <li class="slide">
+                        <img src="{{url_for('static',filename='slide/2.jpg')}}" alt="Nature Image #2">
+                        <h1 class="font">花蓮旅遊網</h1>
+                    </li>
+                    <li class="slide">
+                        <img src="{{url_for('static',filename='slide/3.jpg')}}" alt="Nature Image #3">
+                        <h1 class="font">花蓮旅遊網</h1>
+                    </li>
+                    <li class="slide">
+                        <img src="{{url_for('static',filename='slide/4.jpg')}}" alt="Nature Image #4">
+                        <h1 class="font">花蓮旅遊網</h1>
+                    </li>
+                    <li class="slide">
+                        <img src="{{url_for('static',filename='slide/5.jpg')}}" alt="Nature Image #5">
+                        <h1 class="font">花蓮旅遊網</h1>
+                    </li>
+                    <li class="slide">
+                        <img src="{{url_for('static',filename='slide/6.jpg')}}" alt="Nature Image #6">
+                        <h1 class="font">花蓮旅遊網</h1>
+                    </li>
+                </ul>
+            </div>
+        </section>
+        
+        <!-- <div class="clear"></div> -->
+        <br>
+        <br>
+        <h1> 主題之旅</h1>
+        <form id="rooms_search_bar" action="/Hualien" method="POST">
+            <div class="search_bar">
+                <ul id = "here">
+                    <li id="hello">
+                        <select name="OrderDay" id="OrderDay">
+                            <option>您要哪種行程呢?</option>
+                            
+                            <option value="親子友善">親子友善</option>
+                            
+                            <option value="戶外活動">戶外活動</option>
+                            
+                            <option value="藝術與文化">藝術與文化</option>
+                            
+                            <option value="歷史">歷史</option>
+                            
+                            <option value="海灘">海灘</option>
+                        </select>
+                    </li>
+                    <input name="Sub_Srh" value="1" type="hidden">
+                    <input name ="s"class="btns" value="search" type="submit"style="border-radius: 25px;">
+                </ul>
+            </div>
+        </form>
+
+        <br>
+        <br>
+        
+            <section aria-label="Newest_Photos" >
+                <div class="carousel"data-carousel>
+                    <button class="carousel-button prev"data-carousel-button="prev"> &#8656;</button>
+                    <button class="carousel-button next"data-carousel-button="next">&#8658;</button>
+                    
+                    <ul data-slides>
+                        <!--figstars[0][0]-->
+                        {%for length in range(figstars|length)%}
+                        {%if length == 0%}
+                        <li class="slide"data-active>
+                            <a target="_blank" href="/Hualien/google/{{figstars[length][0]}}" title="The place" style="max-height: 484.5px;">
+                                        <!-- <div class="dBuxib SCkDmc">                                       -->
+                                            <img class = "grid-img" src={{figstars[length][3]}} style="max-height: 484.5px;">
+                                        <!-- </div> -->
+                                        <div class="GwjAi "><div class="rbj0Ud AdWm1c"><div class="skFvHc YmWhbc">{{figstars[length][0]}}</div></div><div class="tP34jb "><span class="ta47le" aria-label={{figstars[length][1]}} role="img">{{figstars[length][1]}}<span class="oz2bpb bVUOpb"><span class="KFi5wf lA0BZ " aria-hidden="true"></span><span class="jdzyld XLC8M " aria-hidden="true"></span></span></span></div><div class="nFoFM">{{figstars[length][2]}}</div></div>
+                            </a>
+                        </li>                      
+                        <!--figstars[1][0]-->
+                        {%else%}
+                        <li class="slide">
+                            <a target="_blank" href="/Hualien/google/{{figstars[length][0]}}" title="The place"style="max-height: 484.5px;">
+                                        <!-- <div class="dBuxib SCkDmc"> -->
+                                            <img class = "grid-img" src={{figstars[length][3]}} style="max-height: 484.5px;">
+                                        <!-- </div> -->
+                                    <div class="GwjAi "><div class="rbj0Ud AdWm1c"><div class="skFvHc YmWhbc">{{figstars[length][0]}}</div></div><div class="tP34jb "><span class="ta47le" aria-label={{figstars[length][1]}} role="img">{{figstars[length][1]}}<span class="oz2bpb bVUOpb"><span class="KFi5wf lA0BZ " aria-hidden="true"></span><span class="jdzyld XLC8M " aria-hidden="true"></span></span></span></div><div class="nFoFM">{{figstars[length][2]}}</div></div>
+                            </a>
+                        </li>
+                        {%endif%}
+                        {%endfor%}
+                    </ul>
+                </div>
+            </section>
+            
+            <div class="gap"></div>
+            <h1> 需要幫您推薦行程嗎(可以把推薦行程寄到你的信箱喔)</h1>
+                <form id="rooms_search_bar" action="/Hualien" METHOD="POST">
+                    <input class="btns"type="submit" name="s" style="width:250px;height:40px;border-radius: 25px;" value="確定"></button>
+                </form>
+            
+            
+            
+
+            {%if click== True %}
+            <form id="rooms_search_bar" action="/Hualien" method="POST">
+                <div class="search_bar">
+                    <ul id = "here">
+                        <li id="hello">
+                            <select name="OrderDay" id="OrderDay" required id="">
+                                <option>您要出去玩多久呢?</option>
+                                
+                                <option value="一日遊">一日遊</option>
+                                
+                                <option value="兩天一夜">兩天一夜</option>
+                                
+                                <option value="三天兩夜">三天兩夜</option>
+                                
+                                <option value="四天三夜">四天三夜</option>
+                                
+                                <option value="多天">多天</option>
+                            </select>
+                        </li>
+                        <input name="Sub_Srh" value="1" type="hidden">
+                        <input class="btns" name="s" value="送出"  type="submit">
+                    </ul>
+                </div>
+            </form>
+            {% endif %}
+
+            {%if send_click%}
+            <h3>你的信箱是什麼?</h3>
+
+            <div id="searchbox">
+                <div class="search_box right">
+                    <form action="/Hualien" METHOD="POST" id="cse-search-box">
+                        <div class="focus">
+                            <input type="text" name="email" id="email"placeholder="請輸入您的信箱"style="width:1000px;height:35px"required id="">
+                            <input type="submit" name="s" value="寄出"style="width:120px;height:30px"></button>
+                            <input type="hidden" name="m" value="0">
+                            <div class="clear"></div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% endif %}
+            <div class="gap"></div>
+    
+            <nav id="fixed_nav" >
+                <div class="nav_button"><span></span>
+                    <div id="pc_nav">
+                        <ul id="nav" class="nav">
+                            <li class="tab-1"><a href="/Hualien/spot">花蓮景點</a></li>
+                            <li class="tab-2"><a href="/Hualien/hotel">花蓮飯店</a></li>
+                            <li class="tab-4"><a href="/Hualien/food">美食特產</a></li>
+                            <li class="tab-5"><a href="/Hualien/transportation">交通資訊</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+</body>
+
+</html>
