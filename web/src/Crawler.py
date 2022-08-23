@@ -9,6 +9,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from xvfbwrapper import Xvfb
 from time import sleep
+
 # from selenium.webdriver.chrome.service import Service as ChromeService
 # from webdriver_manager.chrome import ChromeDriverManager
 host =  os.environ.get('SELENIUM_REMOTE_HOST')
@@ -18,7 +19,7 @@ d['platform'] = "LINUX"
 d['loggingPrefs'] = {'performance': 'ALL'}
 Options = webdriver.ChromeOptions()
 Options.add_argument('--no-sandbox')
-    # Options.add_argument('--headless')
+Options.add_argument('--headless')
 Options.add_argument('--blink-settings=imagesEnabled=false')
 def remote():
     vdisplay.start()
