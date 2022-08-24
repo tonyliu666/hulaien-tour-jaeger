@@ -21,7 +21,7 @@ Options = webdriver.ChromeOptions()
 Options.add_argument('--no-sandbox')
 Options.add_argument('--headless')
 Options.add_argument('--blink-settings=imagesEnabled=false')
-def remote():
+def remote(Options):
     vdisplay.start()
     driver = webdriver.Remote ( 
     command_executor= f'http://{host}:4444/wd/hub',
@@ -62,7 +62,7 @@ class crawl(str):
                 fee = result[1].p.text
                 return [text,address,opening_time,fee,url]
     def google_search(self,name):#這是好的
-        driver = remote()
+        driver = remote(Options)
         driver.get(name)
         # sleep(5)
         driver.implicitly_wait(10)
@@ -105,7 +105,7 @@ class crawl(str):
         #     desired_capabilities=options.to_capabilities(),
         # )
         # driver.get(name)
-        driver = remote()
+        driver = remote(Options)
         driver.get('https://www.google.com/search?q='+name)
         # sleep(5)
         driver.implicitly_wait(10)
@@ -133,7 +133,10 @@ class selenium(str):
         #     desired_capabilities=options.to_capabilities(),
         # )
         # driver.get(name)
-        driver = remote() 
+        sel_option = webdriver.ChromeOptions()
+        sel_option.add_argument('--no-sandbox')
+        sel_option.add_argument('--blink-settings=imagesEnabled=false')
+        driver = remote(sel_option) 
         driver.get('https://www.booking.com/')
         # sleep(5)
         driver.implicitly_wait(30)
