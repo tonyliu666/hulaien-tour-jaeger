@@ -13,3 +13,7 @@ the first python flask project using docker-compose
 >3. docker file CMD vs ENTRYPOINT command . There are some tricks between them . 
 >4. The kind of ports in docker compose file(host port and container port). Each of them has its own timing to be used.Which is better used in the certain scenario is also a key point.
 >5. The use method of volumes in docker compose file should be handled carefully.Depending on your demands to decide where you store these data(host machine or docker vol.)
+
+
+demo viedo : 
+    https://youtu.be/uJ615DPqQqw
