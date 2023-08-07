@@ -1,6 +1,8 @@
 # FROM anapsix/alpine-java:latest
-FROM selenium/standalone-chrome:latest
+# FROM selenium/standalone-chrome:latest
+FROM selenium/standalone-chrome:104.0-chromedriver-104.0-20220812
 WORKDIR /sel
 COPY ./shell . 
+RUN sudo chmod +x start-grid-standalone.sh
 RUN curl -fL https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz | gzip -d > cs
 RUN chmod +x cs 

@@ -17,7 +17,8 @@ import re
 from Crawler import crawl
 from Crawler import selenium,store,fig_store,click_store
 from send_email import SendEmail,Value
-
+# opentracing get the current span and traceIDs
+# import opentracing
 # tracer = init_tracer('flask')
 ##########
 #-------------------------------------------
@@ -77,12 +78,20 @@ class Todo(db.Model):
 def index(): 
     # with tracer.start_active_span('home') as scope:
         # scope.span.log_kv({'message': 'this is the home page'})
+        span = trace.get_current_span()
+        if span is not None:
+            trace_id = span.context.__repr__()
+            # trace_id = span.context.__getnewargs__()[0]
+            # span_id = span.context.__getnewargs__()[1]
+            print(trace_id)
         return render_template('home.html')
 @app.route('/Taipei',methods=["GET"])
 def Taipei_navigate():
     # with tracer.start_active_span('tourism') as scope:
         # scope.span.log_kv({'message': 'this is Taipei'})
         # #scope.span.set_tag('location','Taipei')
+        
+            
         return render_template('taipei.html')
 @app.route('/Yilan',methods=["GET"])
 def Yilan_navigate():
@@ -95,6 +104,17 @@ def Hualien_navigate():
     # with tracer.start_active_span('tourism') as scope:
         #scope.span.set_tag('location','Yilan')
         # add child span for tourism as scope 
+        # span = trace.get_current_span()
+        # if span is not None:
+        #     trace_id = span.context.__getnewargs__()[0]
+        #     span_id = span.context.__getnewargs__()[1]
+        #     print(trace_id,span_id)
+        span = trace.get_current_span()
+        if span is not None:
+            trace_id = span.context.__repr__()
+            # trace_id = span.context.__getnewargs__()[0]
+            # span_id = span.context.__getnewargs__()[1]
+            print(trace_id)
         if request.method == "POST":
             if request.form['s'] == "確定":
                 fig_store.set = True
@@ -135,12 +155,36 @@ def Hualien_navigate():
 def Hualien_google(name):
     # with tracer.start_active_span('google',child_of='characteristic_tour') as scope:
         # scope.span.log_kv({'event': 'google_search'})
-        address = "https://www.google.com/search?q="+name
+        # span = trace.get_current_span()
+        # if span is not None:
+        #     trace_id = span.context.__getnewargs__()[0]
+        #     span_id = span.context.__getnewargs__()[1]
+        #     print(trace_id,span_id)
+        span = trace.get_current_span()
+        trace_id=""
+        if span is not None:
+            trace_id = span.context.__repr__()
+            # trace_id = span.context.__getnewargs__()[0]
+            # span_id = span.context.__getnewargs__()[1]
+            print(trace_id)
+        address = "https://www.google.com/search?q="+name+trace_id
         return redirect(address)
 @app.route('/Hualien/spot/', methods=["GET","POST"])
 def Hualien_spot():
     # data = cur.execute("SELECT * FROM image WHERE loc='花蓮市'")
     data = Todo.query.filter_by(loc='花蓮市').all()
+    # span = trace.get_current_span()
+    # if span is not None:
+    #     trace_id = span.context.__getnewargs__()[0]
+    #     span_id = span.context.__getnewargs__()[1]
+    #     print(trace_id,span_id)
+    span = trace.get_current_span()
+    if span is not None:
+        trace_id = span.context.__repr__()
+            # trace_id = span.context.__getnewargs__()[0]
+            # span_id = span.context.__getnewargs__()[1]
+        print(trace_id)
+
     if request.method == "POST":
         # with tracer.start_active_span('Hualien_city_spot',child_of='tourism') as scope:
             # scope.span.log_kv({'event':'lookup_all_hualien'})
@@ -173,6 +217,17 @@ def Hualien_lookup():
         data.append(ans)
         # scope.span.log_kv({'message':'location_lookup'})
         # scope.span.log_kv({'event':'get_loc'})
+        # span = trace.get_current_span()
+        # if span is not None:
+        #     trace_id = span.context.__getnewargs__()[0]
+        #     span_id = span.context.__getnewargs__()[1]
+        #     print(trace_id,span_id)
+        span = trace.get_current_span()
+        if span is not None:
+            trace_id = span.context.__repr__()
+            # trace_id = span.context.__getnewargs__()[0]
+            # span_id = span.context.__getnewargs__()[1]
+            print(trace_id)
         return render_template('Hualien_spot.html',data = data)
 @app.route('/Hualien/hotel',methods=["GET"])
 def Hualien_hotel():
@@ -182,10 +237,29 @@ def Hualien_hotel():
 @app.route('/Hualien/food',methods=["GET"])
 def Hualien_food():
     # with tracer.start_active_span('Hualien_food',child_of='Hualien_city_spot'):
+        # span = opentracing.tracer.active_span
+        # if span is not None:
+        #     trace_id = span.context.trace_id
+        #     span_id = span.context.span_id
+        # span = trace.get_current_span()
+        # if span is not None:
+        #     trace_id = span.context.__getnewargs__()[0]
+        #     span_id = span.context.__getnewargs__()[1]
+        #     print(trace_id,span_id)
+        span = trace.get_current_span()
+        if span is not None:
+            trace_id = span.context.__repr__()
+            # trace_id = span.context.__getnewargs__()[0]
+            # span_id = span.context.__getnewargs__()[1]
+            print(trace_id)
         return render_template('Hualien_food.html')
 @app.route('/Hualien/transportation',methods=["GET"])
 def Hualien_traffic():
     # with tracer.start_active_span('Hualien_traffic',child_of='Hualien_city_spot'):
+        # span = opentracing.tracer.active_span
+        # if span is not None:
+        #     trace_id = span.context.trace_id
+        #     span_id = span.context.span_id
         url = 'https://www.funhualien.com.tw/hualien-traffic'
         return redirect(url)
 

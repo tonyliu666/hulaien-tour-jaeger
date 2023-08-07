@@ -40,8 +40,8 @@ services:
       sh -c "
       ./start-grid-standalone.sh
       "
-    volumes:
-      - "grid:/sel:rw"
+    # volumes:
+    #   - "grid:/sel:rw"
   flask-web:
     image: main
     container_name: flask-web
@@ -71,6 +71,7 @@ services:
       - POSTGRES_PORT=5432 
       - POSTGRES_DB=db
       - SELENIUM_REMOTE_HOST=chrome
+      # - SELENIUM_REMOTE_HOST=localhost
     ports:
       - "8080:80"
     networks: 
@@ -94,7 +95,7 @@ volumes:
   Data-volume:
   # Vol:
   Jaeger-vol:
-  grid:
+  # grid:
 networks:
   turingmysql:
   # flask:
