@@ -24,6 +24,7 @@ RUN pip install opentelemetry-instrumentation-requests
 RUN pip install opentelemetry-distro
 RUN pip install opentelemetry-instrumentation  
 RUN pip install opentelemetry-exporter-jaeger
+# RUN pip install opentelemetry-ext-jaeger
 # RUN pip install opentelemetry-exporter-otlp
 # RUN pip install -Iv protobuf==3.20.1
 #####
