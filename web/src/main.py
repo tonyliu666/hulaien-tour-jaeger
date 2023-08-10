@@ -26,12 +26,12 @@ from send_email import SendEmail,Value
 # tracer = init_tracer('flask')
 
 from opentelemetry.instrumentation.logging import LoggingInstrumentor
-LoggingInstrumentor().instrument(set_logging_format=True,loggin_format='%(otelSpanID)s %(otelTraceID)s %(otelServiceName)s %(otelTraceSampled)s')
 
 
 ## -------------jaeger exporter-------------------
 resource = Resource.create({"service.name": "flask-app"})
 provider = TracerProvider(resource=resource)
+
 jaeger_exporter = JaegerExporter(
     # service_name="flask-app",
     agent_host_name='Jaeger',
@@ -41,16 +41,37 @@ jaeger_exporter = JaegerExporter(
 )
 processor = BatchSpanProcessor(jaeger_exporter)
 provider.add_span_processor(processor)
-trace.set_tracer_provider(provider)
+# trace.set_tracer_provider(provider)
 
-## -------------logging appender and consoleexporter-------------- 
+# -------------logging appender and consoleexporter-------------- 
+
+logging.basicConfig(
+    # format='[TRACE_ID=%(trace_id)s SPAN_ID=%(span_id)s] %(message)s',
+    format='%(asctime)s %(levelname)s trace_id=%(otelTraceID)s span_id=%(otelSpanID)s resource.service.name=%(otelServiceName)s trace_sampled=%(otelTraceSampled)s %(message)s',
+    level=logging.INFO
+)
 logger = logging.getLogger(__name__)
-logging_resource = Resource.create({"service.name": "logging_service"})
-logging_provider = TracerProvider(resource=logging_resource)
+# LoggingInstrumentor().instrument(set_logging_format=True,loggin_format='%(msg)s [trace_id=%(trace_id)s,span_id=%(span_id)s]')
+LoggingInstrumentor().instrument(set_logging_format=True)
+# logging_resource = Resource.create({"service.name": "logging_service"})
+# logging_provider = TracerProvider(resource=logging_resource)
 logging_processor = BatchSpanProcessor(ConsoleSpanExporter())
-logging_provider.add_span_processor(logging_processor)
-trace.set_tracer_provider(logging_provider)
+# logging_provider.add_span_processor(logging_processor)
+provider.add_span_processor(logging_processor)
+# trace.set_tracer_provider(logging_provider)
+trace.set_tracer_provider(provider)
+# jaeger_exporter2 = JaegerExporter(
+#     # service_name="flask-app",
+#     agent_host_name='testJaeger',
+#     agent_port=6831,
+#     username="tony2"
+#     # collector_endpoint=14268
+# )
 
+# processor2 = BatchSpanProcessor(jaeger_exporter2)
+# provider.add_span_processor(processor2)
+
+# trace.set_tracer_provider(provider)
 # -------------python flask app----------------
 app = Flask(__name__, template_folder='templates')
 FlaskInstrumentor().instrument_app(app)
@@ -61,12 +82,6 @@ host = os.environ.get('POSTGRES_HOST')
 port = os.environ.get('POSTGRES_PORT')
 database = os.environ.get('POSTGRES_DB') 
 
-# conn_string = f"dbname='{database}'user='{user}'host='{host}'port='{port}'"
-
-# conn = psycopg2.connect(
-#     conn_string
-# )
-# cur = conn.cursor()
 def connect_db():
     # with tracer.start_active_span('db') as scope:
         DATABASE_CONNECTION_URI = f'postgresql://{user}:{password}@{host}:{port}/{database}'
@@ -108,7 +123,9 @@ def index():
         # scope.span.log_kv({'message': 'this is the home page'})
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)
-        logger.info('GET: 200 / '+'traceid: '+trace_id+' spanid: '+span_id)
+        # logger.info('trace_id=%(trace_id)s span_id=%(span_id)s resource.service.name=flask-app trace_sampled=true Hello world')
+        logger.info('GET: 200 / '+'tracing traceid: '+trace_id+'tracing spanid: '+span_id)
+        # logging.info("User successfully authenticated", extra={"trace_id": trace_id, "span_id": span_id,"resource.service.name":"flask-app"})
         return render_template('home.html')
 @app.route('/Taipei',methods=["GET"])
 def Taipei_navigate():
@@ -142,6 +159,8 @@ def Hualien_navigate():
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)
         logger.info('GET: 200 /Hualien '+'traceid: '+trace_id+' spanid: '+span_id)
+        # logging.info('GET: 200 /Hualien ', extra={"trace_id": trace_id, "span_id": span_id})
+        
         if request.method == "POST":
             if request.form['s'] == "確定":
                 fig_store.set = True
@@ -201,7 +220,7 @@ def Hualien_google(name):
         #     print(trace_id,span_id)
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)  
-        logger.info('GET: 200 /Hualien/google/<name> '+'traceid: '+trace_id+' spanid: '+span_id)
+        logger.info('GET: 200 /Hualien/google/'+name+' '+'traceid: '+trace_id+' spanid: '+span_id)
         address = "https://www.google.com/search?q="+name
         return redirect(address)
 @app.route('/Hualien/spot/', methods=["GET","POST"])
@@ -294,7 +313,7 @@ def Hualien_traffic():
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)  
         logger.info('GET: 200 /Hualien/transportation '+'traceid: '+trace_id+' spanid: '+span_id)
-    
+        logger.warn('---testing--- ')
         url = 'https://www.funhualien.com.tw/hualien-traffic'
         return redirect(url)
 
@@ -467,7 +486,7 @@ def plot_routing(link_name,title):
             
             return render_template('introduction.html',data = data,set = False)
         except: 
-            logger.error('/<title>/<link_name> crawling failed  '+'traceid: '+trace_id+' spanid: '+span_id)
+            logger.critical('/'+title+'/'+link_name+' crawling failed  '+'traceid: '+trace_id+' spanid: '+span_id)
             
 
 @app.route('/booking/<variable>')
@@ -477,16 +496,15 @@ def booking(variable):
         data = store.list_back()
         variable = re.sub('[a-zA-Z]',"",variable)
         variable = re.sub('[1-9]',"",variable)
+        span = trace.get_current_span()
+        trace_id,span_id = GetTraceSpanID(span) 
         try:
             sel = selenium(variable).data(variable)
-            span = trace.get_current_span()
-            trace_id,span_id = GetTraceSpanID(span)  
-            logger.info('GET: 200 /booking/<variable> '+'traceid: '+trace_id+' spanid: '+span_id)
-            
+            logger.info('GET: 200 /booking/'+variable+ ' traceid: '+trace_id+' spanid: '+span_id)
             text = "為您推薦五筆優質旅館"
             return render_template('introduction.html',data = data,sel=sel,text =text,set=True)
         except:
-            logger.fatal('---your selenium crawling is malfunctioning'+trace_id+'---')
+            logger.critical('---your selenium crawling is malfunctioning ---')
         
 if __name__ =='__main__':
     # print(Todo.query().filter_by(loc='花蓮市').all(),sys.stderr)
