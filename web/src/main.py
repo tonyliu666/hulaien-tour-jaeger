@@ -48,7 +48,7 @@ provider.add_span_processor(processor)
 logging.basicConfig(
     # format='[TRACE_ID=%(trace_id)s SPAN_ID=%(span_id)s] %(message)s',
     format='%(asctime)s %(levelname)s trace_id=%(otelTraceID)s span_id=%(otelSpanID)s resource.service.name=%(otelServiceName)s trace_sampled=%(otelTraceSampled)s %(message)s',
-    level=logging.INFO
+    level=logging.ERROR
 )
 logger = logging.getLogger(__name__)
 # LoggingInstrumentor().instrument(set_logging_format=True,loggin_format='%(msg)s [trace_id=%(trace_id)s,span_id=%(span_id)s]')
@@ -505,6 +505,12 @@ def booking(variable):
             return render_template('introduction.html',data = data,sel=sel,text =text,set=True)
         except:
             logger.critical('---your selenium crawling is malfunctioning ---')
+            status_code = trace.StatusCode.ERROR
+            status_description = "An selenium crawling error occurred."
+            span.set_status(status_code, status_description)
+            http_status_code = 404
+            span.set_attribute("http.response.status_code", http_status_code)
+            return render_template('introduction.html',data = None,sel=None,text =None,set=False)
         
 if __name__ =='__main__':
     # print(Todo.query().filter_by(loc='花蓮市').all(),sys.stderr)
