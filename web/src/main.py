@@ -23,6 +23,7 @@ from Crawler import crawl
 from Crawler import selenium,store,fig_store,click_store
 from send_email import SendEmail,Value
 from util import GetCurrentTime
+from error import check_crawling_correct,CustomError
 # opentracing get the current span and traceIDs
 # import opentracing
 # tracer = init_tracer('flask')
@@ -215,6 +216,8 @@ def Hualien_navigate():
                     try:
                         start_time = time.time() 
                         fig_stars = crawl(url).google_search(url)
+                        check_crawling_correct(len(fig_stars))
+                        logger.info("check wheter there is any log here"+str(len(fig_stars)))
                         end_time = time.time()
                         child_span.add_event("ShowOnScreenLatency", {
                             "latency": str(end_time-start_time),
@@ -223,14 +226,18 @@ def Hualien_navigate():
                         logger.info('GET:200 /Hualien crawling items to users'
                         +' traceid: '+trace_id+' spanid: '+span_id)
                         return render_template('Hualien.html',figstars = fig_store.fig_back(),click=fig_store.set_back(),send_click = click_store.set_back()) 
-                    except:
+                    except CustomError as e:
                         status_code = trace.StatusCode.ERROR
                         status_description = "Fail showing the recommendation themes to users"
                         child_span.set_status(status_code, status_description)
+                        child_span.add_event("Crawling the themes", {"error message": e.message})
+                        # child_span.log_kv({'event':e.message})
+                        # child_span.set_events("exception.stacktrace",e.message)
                         http_status_code = 404
                         child_span.set_attribute("http.response.status_code", http_status_code)
                         logger.error('Fail: /Hualien sending recommendation emails to endusers'
-                            +' traceid: '+trace_id+' spanid: '+span_id)   
+                            +' traceid: '+trace_id+' spanid: '+span_id)  
+                        span.set_status(status_code, status_description)
                         return render_template('Hualien.html')         
                           
             # scope.span.log_kv({'message': 'this is Hualien'})
