@@ -18,16 +18,18 @@ from opentelemetry.sdk.resources import Resource
 import logging
 import os,sys
 import re 
+import time 
 from Crawler import crawl
 from Crawler import selenium,store,fig_store,click_store
 from send_email import SendEmail,Value
+from util import GetCurrentTime
 # opentracing get the current span and traceIDs
 # import opentracing
 # tracer = init_tracer('flask')
 
 from opentelemetry.instrumentation.logging import LoggingInstrumentor
 
-
+tracer = trace.get_tracer(__name__)
 ## -------------jaeger exporter-------------------
 resource = Resource.create({"service.name": "flask-app"})
 provider = TracerProvider(resource=resource)
@@ -48,7 +50,7 @@ provider.add_span_processor(processor)
 logging.basicConfig(
     # format='[TRACE_ID=%(trace_id)s SPAN_ID=%(span_id)s] %(message)s',
     format='%(asctime)s %(levelname)s trace_id=%(otelTraceID)s span_id=%(otelSpanID)s resource.service.name=%(otelServiceName)s trace_sampled=%(otelTraceSampled)s %(message)s',
-    level=logging.ERROR
+    level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 # LoggingInstrumentor().instrument(set_logging_format=True,loggin_format='%(msg)s [trace_id=%(trace_id)s,span_id=%(span_id)s]')
@@ -174,13 +176,26 @@ def Hualien_navigate():
                 tour=crawl(url).tour_guide(url)
                 Email = request.form.get('email')
                 pack = [app,tour,Email]
-                try:
-                    SendEmail(pack).send_email(pack)
-                    logger.info('GET: 200 /Hualien sending recommendation emails to users'
+                with tracer.start_as_current_span('SendEmail') as child_span:
+                    child_span.set_attribute("span.creation_time", GetCurrentTime())
+                    try:
+                        start_time = time.time() 
+                        SendEmail(pack).send_email(pack)
+                        end_time = time.time()
+                        child_span.add_event("SendEmailLatency", {
+                            "latency": str(end_time-start_time),
+                        })
+                        logger.info('GET:200 /Hualien sending recommendation emails to users'
                         +' traceid: '+trace_id+' spanid: '+span_id)
-                except:
-                    logger.warn('Fail /Hualien sending recommendation emails to users'
-                        +' traceid: '+trace_id+' spanid: '+span_id)
+                    except:
+                        status_code = trace.StatusCode.ERROR
+                        status_description = "Emails can't be sent to end users"
+                        child_span.set_status(status_code, status_description)
+                        http_status_code = 502
+                        child_span.set_attribute("http.response.status_code", http_status_code)
+                        logger.warning('Fail /Hualien sending recommendation emails to endusers'
+                            +' traceid: '+trace_id+' spanid: '+span_id)
+                
             else:
                 value = request.form.get('OrderDay')
                 if value == "親子友善":
@@ -195,16 +210,30 @@ def Hualien_navigate():
                     url = 'https://www.google.com/travel/things-to-do/see-all?dest_mid=%2Fm%2F025c70&dest_state_type=main&dest_src=yts&rf=EgwKCC9tLzBiM3lyKAE&q=%E8%8A%B1%E8%93%AE%E6%B5%B7%E7%81%98&ved=0CAAQ8IAIahgKEwig1r3ChIT5AhUAAAAAHQAAAAAQnAM&tcfs=EhcKDS9nLzExY2xocHRiNV8SBuiKseiTrg'
                 # with tracer.start_active_span('characteristic_tour',child_of='tourism') as scope:
                     # #scope.span.set_tag('character',value)
-                try:
-                    fig_stars = crawl(url).google_search(url)
-                    logger.info('GET: 200 /Hualien crawling items to users'
+                with tracer.start_as_current_span('RecommendationShowOnScreen') as child_span:
+                    child_span.set_attribute("span.creation_time", GetCurrentTime())
+                    try:
+                        start_time = time.time() 
+                        fig_stars = crawl(url).google_search(url)
+                        end_time = time.time()
+                        child_span.add_event("ShowOnScreenLatency", {
+                            "latency": str(end_time-start_time),
+                        })
+                        fig_store.fig = fig_stars
+                        logger.info('GET:200 /Hualien crawling items to users'
                         +' traceid: '+trace_id+' spanid: '+span_id)
-                except:
-                    logger.warn('Fail /Hualien sending recommendation emails to users'
-                        +' traceid: '+trace_id+' spanid: '+span_id)
-                fig_store.fig = fig_stars
+                        return render_template('Hualien.html',figstars = fig_store.fig_back(),click=fig_store.set_back(),send_click = click_store.set_back()) 
+                    except:
+                        status_code = trace.StatusCode.ERROR
+                        status_description = "Fail showing the recommendation themes to users"
+                        child_span.set_status(status_code, status_description)
+                        http_status_code = 404
+                        child_span.set_attribute("http.response.status_code", http_status_code)
+                        logger.error('Fail: /Hualien sending recommendation emails to endusers'
+                            +' traceid: '+trace_id+' spanid: '+span_id)   
+                        return render_template('Hualien.html')         
+                          
             # scope.span.log_kv({'message': 'this is Hualien'})
-            return render_template('Hualien.html',figstars = fig_store.fig_back(),click=fig_store.set_back(),send_click = click_store.set_back())       
                     # redirect(url_for('Hualien_lookup',another = another))  
         else:
             # scope.span.log_kv({'message': 'this is Hualien'})
@@ -220,19 +249,22 @@ def Hualien_google(name):
         #     print(trace_id,span_id)
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)  
-        logger.info('GET: 200 /Hualien/google/'+name+' '+'traceid: '+trace_id+' spanid: '+span_id)
+        logger.info('GET:200 /Hualien/google/'+name+' '+'traceid: '+trace_id+' spanid: '+span_id)
         address = "https://www.google.com/search?q="+name
         return redirect(address)
 @app.route('/Hualien/spot/', methods=["GET","POST"])
 def Hualien_spot():
     # data = cur.execute("SELECT * FROM image WHERE loc='花蓮市'")
-    data = Todo.query.filter_by(loc='花蓮市').all()
-    # span = trace.get_current_span()
-    # if span is not None:
-    #     trace_id = span.context.__getnewargs__()[0]
-    #     span_id = span.context.__getnewargs__()[1]
-    #     print(trace_id,span_id)
     span = trace.get_current_span()
+    with tracer.start_as_current_span('QueryHualienCity') as child_span:
+    # Set attributes, events, and other operations for the child span
+        start_time = time.time()
+        data = Todo.query.filter_by(loc='花蓮市').all()
+        end_time = time.time()
+        child_span.add_event( "HualienCity", {
+            "latency": str(end_time-start_time),
+        })
+    
     trace_id,span_id = GetTraceSpanID(span)  
     logger.info('GET: 200 /Hualien/spot '+'traceid: '+trace_id+' spanid: '+span_id)
 
@@ -243,10 +275,17 @@ def Hualien_spot():
             another = []
             task_content = request.form['content']
             logger.info('POST: 200 /Hualien/spot FilterAll'+'traceid: '+trace_id+' spanid: '+span_id)
-            for todo in Todo.query.all():  
-            # for todo in cur.execute("SELECT * FROM image"):  
-                if todo.title == task_content:
-                    another.append(todo.id)
+            
+            with tracer.start_as_current_span('QueryAll') as child_span:
+                start_time = time.time()
+                for todo in Todo.query.all():  
+                # for todo in cur.execute("SELECT * FROM image"):  
+                    if todo.title == task_content:
+                        another.append(todo.id)
+                end_time = time.time()
+                child_span.add_event( "QueryAllSpots", {
+                    "latency": str(end_time-start_time),
+                })
             return redirect(url_for('Hualien_lookup',another = another))
     else: 
         # copy_data = Todo.query.all()
@@ -322,19 +361,32 @@ def Hualien_traffic():
 ##################
 @app.route('/Hualien/全部',methods=["GET"])
 def all_lookup():
-    #with tracer.start_active_span('Hualien_city_spot',child_of='lookup') as scope:
-        #scope.span.set_tag('where','全部')
+    with tracer.start_as_current_span('QueryAll') as child_span:
+        child_span.set_attribute("span.creation_time", GetCurrentTime())
+        start_time = time.time() 
         result = Todo.query.all() #已 return全部的花蓮市景點加入進來
-        span = trace.get_current_span()
-        trace_id,span_id = GetTraceSpanID(span)  
-        logger.info('GET: 200 /Hualien/全部 '+'traceid: '+trace_id+' spanid: '+span_id)
+        end_time = time.time()
+        child_span.add_event("QueryAllHualienData", {
+            "latency": str(end_time-start_time),
+        })
+    span = trace.get_current_span()
+    trace_id,span_id = GetTraceSpanID(span)  
+    logger.info('GET: 200 /Hualien/全部 '+'traceid: '+trace_id+' spanid: '+span_id)
     
-        return render_template('Hualien_spot.html',data = result)
+    return render_template('Hualien_spot.html',data = result)
 
 @app.route('/Hualien/花蓮市',methods=["GET"])
 def hualien_lookup():
     #with tracer.start_active_span('Hualien_city_spot',child_of='lookup') as scope:
         #scope.span.set_tag('where','花蓮市')
+        with tracer.start_as_current_span('Query_花蓮市') as child_span:
+            child_span.set_attribute("span.creation_time", GetCurrentTime())
+            start_time = time.time() 
+            result = Todo.query.all() #已 return全部的花蓮市景點加入進來
+            end_time = time.time()
+            child_span.add_event("QueryHualienCityData", {
+                "latency": str(end_time-start_time),
+            })
         result = Todo.query.filter_by(loc='花蓮市').all() #已 return全部的花蓮市景點加入進來
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)  
@@ -346,7 +398,15 @@ def hualien_lookup():
 def yuli_lookup():
     #with tracer.start_active_span('Hualien_city_spot',child_of='lookup') as scope:
         #scope.span.set_tag('where','玉里鎮')
-        result = Todo.query.filter_by(loc='玉里鎮').all() 
+        with tracer.start_as_current_span('Query_玉里鎮') as child_span:
+            child_span.set_attribute("span.creation_time", GetCurrentTime())
+            start_time = time.time() 
+            result = Todo.query.filter_by(loc='玉里鎮').all() 
+            end_time = time.time()
+            child_span.add_event("Query玉里鎮Data", {
+                "latency": str(end_time-start_time),
+            })
+        # result = Todo.query.filter_by(loc='玉里鎮').all() 
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)  
         logger.info('GET: 200 /Hualien/玉里鎮 '+'traceid: '+trace_id+' spanid: '+span_id)
@@ -356,7 +416,14 @@ def yuli_lookup():
 def kongfu_lookup():
     #with tracer.start_active_span('Hualien_city_spot',child_of='lookup') as scope:
         #scope.span.set_tag('where','光復鄉')
-        result = Todo.query.filter_by(loc='光復鄉').all() 
+        with tracer.start_as_current_span('Query_光復鄉') as child_span:
+            child_span.set_attribute("span.creation_time", GetCurrentTime())
+            start_time = time.time() 
+            result = Todo.query.filter_by(loc='光復鄉').all() 
+            end_time = time.time()
+            child_span.add_event("Query光復鄉Data", {
+                "latency": str(end_time-start_time),
+        })
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)  
         logger.info('GET: 200 /Hualien/光復鄉 '+'traceid: '+trace_id+' spanid: '+span_id)
@@ -366,7 +433,14 @@ def kongfu_lookup():
 def jian_lookup():
     #with tracer.start_active_span('Hualien_city_spot',child_of='lookup') as scope:
         #scope.span.set_tag('where','吉安鄉')
-        result = Todo.query.filter_by(loc='吉安鄉').all() 
+        with tracer.start_as_current_span('Query_吉安鄉') as child_span:
+            child_span.set_attribute("span.creation_time", GetCurrentTime())
+            start_time = time.time() 
+            result = Todo.query.filter_by(loc='吉安鄉').all() 
+            end_time = time.time()
+            child_span.add_event("Query吉安鄉Data", {
+                "latency": str(end_time-start_time),
+        })
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)  
         logger.info('GET: 200 /Hualien/吉安鄉 '+'traceid: '+trace_id+' spanid: '+span_id)
@@ -376,7 +450,14 @@ def jian_lookup():
 def hsulin_lookup():
     #with tracer.start_active_span('Hualien_city_spot',child_of='lookup') as scope:
         #scope.span.set_tag('where','秀林鄉')
-        result = Todo.query.filter_by(loc='秀林鄉').all()
+        with tracer.start_as_current_span('Query_秀林鄉') as child_span:
+            child_span.set_attribute("span.creation_time", GetCurrentTime())
+            start_time = time.time() 
+            result = Todo.query.filter_by(loc='秀林鄉').all()
+            end_time = time.time()
+            child_span.add_event("Query秀林鄉Data", {
+                "latency": str(end_time-start_time),
+        })
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)  
         logger.info('GET: 200 /Hualien/秀林鄉 '+'traceid: '+trace_id+' spanid: '+span_id)
@@ -386,7 +467,15 @@ def hsulin_lookup():
 def fuli_lookup():
     #with tracer.start_active_span('Hualien_city_spot',child_of='lookup') as scope:
         #scope.span.set_tag('where','富里鄉')
-        result = Todo.query.filter_by(loc='富里鄉').all() 
+        with tracer.start_as_current_span('Query_富里鄉') as child_span:
+            child_span.set_attribute("span.creation_time", GetCurrentTime())
+            start_time = time.time() 
+            result = Todo.query.filter_by(loc='富里鄉').all() 
+            end_time = time.time()
+            child_span.add_event("Query富里鄉Data", {
+                "latency": str(end_time-start_time),
+        })
+        
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)  
         logger.info('GET: 200 /Hualien/富里鄉 '+'traceid: '+trace_id+' spanid: '+span_id)
@@ -396,7 +485,15 @@ def fuli_lookup():
 def shinchen_lookup():
     #with tracer.start_active_span('Hualien_city_spot',child_of='lookup') as scope:
         #scope.span.set_tag('where','新城鄉')
-        result = Todo.query.filter_by(loc='新城鄉').all() 
+        with tracer.start_as_current_span('Query_新城鄉') as child_span:
+            child_span.set_attribute("span.creation_time", GetCurrentTime())
+            start_time = time.time() 
+            result = Todo.query.filter_by(loc='新城鄉').all()
+            end_time = time.time()
+            child_span.add_event("Query新城鄉Data", {
+                "latency": str(end_time-start_time),
+        })
+         
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)  
         logger.info('GET: 200 /Hualien/新城鄉 '+'traceid: '+trace_id+' spanid: '+span_id)
@@ -406,7 +503,15 @@ def shinchen_lookup():
 def resei_lookup():
     #with tracer.start_active_span('Hualien_city_spot',child_of='lookup') as scope:
         #scope.span.set_tag('where','瑞穗鄉')
-        result = Todo.query.filter_by(loc='瑞穗鄉').all() 
+        with tracer.start_as_current_span('Query_瑞穗鄉') as child_span:
+            child_span.set_attribute("span.creation_time", GetCurrentTime())
+            start_time = time.time() 
+            result = Todo.query.filter_by(loc='瑞穗鄉').all() 
+            end_time = time.time()
+            child_span.add_event("Query瑞穗鄉Data", {
+                "latency": str(end_time-start_time),
+        })
+        
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)  
         logger.info('GET: 200 /Hualien/瑞穗鄉 '+'traceid: '+trace_id+' spanid: '+span_id)
@@ -415,7 +520,15 @@ def resei_lookup():
 def vanlung_lookup():
     #with tracer.start_active_span('Hualien_city_spot',child_of='lookup') as scope:
         #scope.span.set_tag('where','萬榮鄉')
-        result = Todo.query.filter_by(loc='萬榮鄉').all() 
+        with tracer.start_as_current_span('Query_萬榮鄉') as child_span:
+            child_span.set_attribute("span.creation_time", GetCurrentTime())
+            start_time = time.time() 
+            result = Todo.query.filter_by(loc='萬榮鄉').all() 
+            end_time = time.time()
+            child_span.add_event("Query萬榮鄉Data", {
+                "latency": str(end_time-start_time),
+        })
+        
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)  
         logger.info('GET: 200 /Hualien/萬榮鄉 '+'traceid: '+trace_id+' spanid: '+span_id)
@@ -423,7 +536,14 @@ def vanlung_lookup():
 @app.route('/Hualien/壽豐鄉',methods=["GET"])
 def shufun_lookup():
     #with tracer.start_active_span('Hualien_city_spot',child_of='lookup') as scope:
-        result = Todo.query.filter_by(loc='壽豐鄉').all() 
+        with tracer.start_as_current_span('Query_壽豐鄉') as child_span:
+            child_span.set_attribute("span.creation_time", GetCurrentTime())
+            start_time = time.time() 
+            result = Todo.query.filter_by(loc='壽豐鄉').all() 
+            end_time = time.time()
+            child_span.add_event("Query壽豐鄉Data", {
+                "latency": str(end_time-start_time),
+        })
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)  
         logger.info('GET: 200 /Hualien/壽豐鄉 '+'traceid: '+trace_id+' spanid: '+span_id)
@@ -433,7 +553,15 @@ def shufun_lookup():
 def vanlin_lookup():
     #with tracer.start_active_span('Hualien_city_spot',child_of='lookup') as scope:
         #scope.span.set_tag('where','鳳林鎮')
-        result = Todo.query.filter_by(loc='鳳林鎮').all() 
+        with tracer.start_as_current_span('Query_鳳林鎮') as child_span:
+            child_span.set_attribute("span.creation_time", GetCurrentTime())
+            start_time = time.time() 
+            result = Todo.query.filter_by(loc='鳳林鎮').all() 
+            end_time = time.time()
+            child_span.add_event("Query鳳林鎮Data", {
+                "latency": str(end_time-start_time),
+        })
+        
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)  
         logger.info('GET: 200 /Hualien/鳳林鎮 '+'traceid: '+trace_id+' spanid: '+span_id)
@@ -443,7 +571,15 @@ def vanlin_lookup():
 def fungbin_lookup():
     #with tracer.start_active_span('Hualien_city_spot',child_of='lookup') as scope:
         #scope.span.set_tag('where','豐濱鄉')
-        result = Todo.query.filter_by(loc='豐濱鄉').all() 
+        with tracer.start_as_current_span('Query_豐濱鄉') as child_span:
+            child_span.set_attribute("span.creation_time", GetCurrentTime())
+            start_time = time.time() 
+            result = Todo.query.filter_by(loc='豐濱鄉').all() 
+            end_time = time.time()
+            child_span.add_event("Query豐濱鄉Data", {
+                "latency": str(end_time-start_time),
+        })
+         
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)  
         logger.info('GET: 200 /Hualien/豐濱鄉 '+'traceid: '+trace_id+' spanid: '+span_id)
@@ -453,7 +589,14 @@ def fungbin_lookup():
 def jushi_lookup():
     #with tracer.start_active_span('Hualien_city_spot',child_of='lookup') as scope:
         #scope.span.set_tag('where','卓溪鄉')
-        result = Todo.query.filter_by(loc='卓溪鄉').all() 
+        with tracer.start_as_current_span('Query_卓溪鄉') as child_span:
+            child_span.set_attribute("span.creation_time", GetCurrentTime())
+            start_time = time.time() 
+            result = Todo.query.filter_by(loc='卓溪鄉').all() 
+            end_time = time.time()
+            child_span.add_event("Query卓溪鄉Data", {
+                "latency": str(end_time-start_time),
+        })
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)  
         logger.info('GET: 200 /Hualien/卓溪鄉 '+'traceid: '+trace_id+' spanid: '+span_id)
@@ -497,26 +640,29 @@ def booking(variable):
         variable = re.sub('[a-zA-Z]',"",variable)
         variable = re.sub('[1-9]',"",variable)
         span = trace.get_current_span()
-        trace_id,span_id = GetTraceSpanID(span) 
-        try:
-            sel = selenium(variable).data(variable)
-            logger.info('GET: 200 /booking/'+variable+ ' traceid: '+trace_id+' spanid: '+span_id)
-            text = "為您推薦五筆優質旅館"
-            return render_template('introduction.html',data = data,sel=sel,text =text,set=True)
-        except:
-            logger.critical('---your selenium crawling is malfunctioning ---')
-            status_code = trace.StatusCode.ERROR
-            status_description = "An selenium crawling error occurred."
-            span.set_status(status_code, status_description)
-            http_status_code = 404
-            span.set_attribute("http.response.status_code", http_status_code)
-            return render_template('introduction.html',data = None,sel=None,text =None,set=False)
-        
+        trace_id,span_id = GetTraceSpanID(span)
+        with tracer.start_as_current_span('BookingWebSiteFor'+variable) as child_span:
+            child_span.set_attribute("span.creation_time", GetCurrentTime())
+            try:
+                start_time = time.time() 
+                sel = selenium(variable).data(variable)
+                end_time = time.time()
+                child_span.add_event("SendEmailLatency", {
+                    "latency": str(end_time-start_time),
+                })
+                logger.info('GET: 200 /booking/'+variable+ ' traceid: '+trace_id+' spanid: '+span_id)
+                text = "為您推薦五筆優質旅館"
+                return render_template('introduction.html',data = data,sel=sel,text =text,set=True)
+            except:
+                status_code = trace.StatusCode.ERROR
+                status_description = "Selenium container may failed,you need to repair it"
+                child_span.set_status(status_code, status_description)
+                http_status_code = 404
+                child_span.set_attribute("http.response.status_code", http_status_code)
+                logger.critical('---your selenium crawling is malfunctioning ---')
+                return render_template('introduction.html',data = None,sel=None,text =None,set=False)
+
 if __name__ =='__main__':
-    # print(Todo.query().filter_by(loc='花蓮市').all(),sys.stderr)
     # app.run(host="0.0.0.0",port=80,debug=True,use_reloadr=False)
     app.run(host="0.0.0.0",port=80,debug=True)
-    # db.create_all() 
-    # Init()
-    # res= Todo.query().filter_by(loc='花蓮市').all()
-    # print(res,sys.stderr)
+
