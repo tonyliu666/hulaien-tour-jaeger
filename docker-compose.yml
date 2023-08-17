@@ -24,6 +24,8 @@ services:
       - tracing
   chrome:
     image: test
+    # build:
+    #   context: ./Dockerfile.sel
     shm_size: 4gb
     container_name: CHROME
     expose : 
@@ -44,6 +46,8 @@ services:
     #   - "grid:/sel:rw"
   flask-web:
     image: main
+    # build:
+    #   context: ./Dockerfile
     container_name: flask-web
     depends_on:
       - db
