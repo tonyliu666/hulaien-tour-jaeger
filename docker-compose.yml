@@ -63,6 +63,7 @@ services:
       #   source: /c/Projects/Go/src/kubernetes-service-mesh/test-storage 
       #   target: /app
       - ".:/app:rw"
+      - ./logs/input.log:/var/log/applogs
     command: > 
       sh -c " 
         python /app/web/src/main.py 
@@ -93,26 +94,65 @@ services:
     - 16686:16686
     - 14250:14250
     - 6831:6831/udp
+    environment:
+      - SPAN_STORAGE_TYPE=elasticsearch
+      - ES_SERVER_URLS=http://elasticsearch:9200
+      - LOG_LEVEL=info
     # volumes:
     #   - Jaeger-vol:/var/lib/jaeger
-  # testjaeger:
-  #   container_name: testJaeger
-  #   image: jaegertracing/all-in-one:latest
-  #   networks:
-  #     - tracing
-  #   ports:
-  #   - 16685:16686
-  #   - 14249:14250
-  #   - 6830:6831/udp
+
+  fluentd:
+    container_name: fluentd
+    user: root
+    build:
+      context: ./fluentd
+    image: fluentd
+    # depends_on:
+    #   - elasticsearch
+    volumes:
+    # - ./file:/fluentd/log/files/ #Example: Reading logs from a file
+    #- /var/lib/docker/containers:/fluentd/log/containers # Example: Reading docker logs
+    - ./fluentd/conf:/fluentd/etc/
+    #- ./logs/output.log:/output/ # Example: Fluentd will collect logs and store it here for demo
+    - ./logs/input.log:/input/
+    ports:
+      # We need to expose these ports to the host so the Docker engine can log to it.
+      - "127.0.0.1:24224:24224"
+      - "127.0.0.1:24224:24224/udp"
+    networks:
+      - tracing
+    logging:
+      driver: "local"
+  
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.2.2
+    container_name: elasticsearch
+    environment:
+      - "discovery.type=single-node"
+      - xpack.security.enabled=false
+    expose:
+      - "9201"
+    networks:
+      - tracing
+    ports:
+      - "9201:9200"
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.2.2
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS="http://elasticsearch:9200"
+      - ELASTICSEARCH_URL="http://elasticsearch:9200"
+    links:
+      - "elasticsearch"
+    networks:
+      - tracing
+    ports:
+      - "5600:5601"
 volumes:
   Data-volume:
-  # Vol:
-  # Jaeger-vol:
-  # grid:
+  
 networks:
   turingmysql:
-  # flask:
-  #   driver: bridge
   chrome_net:
   tracing:
     name: tracing

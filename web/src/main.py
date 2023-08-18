@@ -14,6 +14,7 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor,ConsoleSpanExporter
 
 from opentelemetry.sdk.resources import Resource
+from opentelemetry.instrumentation.logging import LoggingInstrumentor
 
 import logging
 import os,sys
@@ -24,57 +25,50 @@ from Crawler import selenium,store,fig_store,click_store
 from send_email import SendEmail,Value
 from util import GetCurrentTime
 from error import check_crawling_correct,CustomError
-# opentracing get the current span and traceIDs
-# import opentracing
-# tracer = init_tracer('flask')
 
-from opentelemetry.instrumentation.logging import LoggingInstrumentor
+log_file = '/var/log/applogs/flask.log'
+
+
+## needs to  put these two lines front of the resource 
+# because: https://opentelemetry-python-contrib.readthedocs.io/en/latest/instrumentation/logging/logging.html#manually-calling-logging-basicconfig
+file_handler = logging.FileHandler(log_file)
+logging.basicConfig(level=logging.INFO, 
+                    format='%(asctime)s %(levelname)s trace_id=%(otelTraceID)s span_id=%(otelSpanID)s resource.service.name=%(otelServiceName)s trace_sampled=%(otelTraceSampled)s %(message)s',
+                    handlers=[file_handler]
+)
 
 tracer = trace.get_tracer(__name__)
+logger = logging.getLogger(__name__)
+
+# ---opentelenetry logger---
+telemetry_logger = logging.getLogger("opentelemetry")
+telemetry_handler = logging.FileHandler(log_file)
+telemetry_logger.addHandler(telemetry_handler)
+
 ## -------------jaeger exporter-------------------
 resource = Resource.create({"service.name": "flask-app"})
 provider = TracerProvider(resource=resource)
+
+logging_processor = BatchSpanProcessor(ConsoleSpanExporter())
+provider.add_span_processor(logging_processor)
 
 jaeger_exporter = JaegerExporter(
     # service_name="flask-app",
     agent_host_name='Jaeger',
     agent_port=6831,
     username="tony"
-    # collector_endpoint=14268
 )
 processor = BatchSpanProcessor(jaeger_exporter)
 provider.add_span_processor(processor)
-# trace.set_tracer_provider(provider)
+trace.set_tracer_provider(provider)
 
 # -------------logging appender and consoleexporter-------------- 
-
-logging.basicConfig(
-    # format='[TRACE_ID=%(trace_id)s SPAN_ID=%(span_id)s] %(message)s',
-    format='%(asctime)s %(levelname)s trace_id=%(otelTraceID)s span_id=%(otelSpanID)s resource.service.name=%(otelServiceName)s trace_sampled=%(otelTraceSampled)s %(message)s',
-    level=logging.INFO
-)
-logger = logging.getLogger(__name__)
+# all the stuffs should be finished before LoggingInstrumentor()
 # LoggingInstrumentor().instrument(set_logging_format=True,loggin_format='%(msg)s [trace_id=%(trace_id)s,span_id=%(span_id)s]')
 LoggingInstrumentor().instrument(set_logging_format=True)
 # logging_resource = Resource.create({"service.name": "logging_service"})
 # logging_provider = TracerProvider(resource=logging_resource)
-logging_processor = BatchSpanProcessor(ConsoleSpanExporter())
-# logging_provider.add_span_processor(logging_processor)
-provider.add_span_processor(logging_processor)
-# trace.set_tracer_provider(logging_provider)
-trace.set_tracer_provider(provider)
-# jaeger_exporter2 = JaegerExporter(
-#     # service_name="flask-app",
-#     agent_host_name='testJaeger',
-#     agent_port=6831,
-#     username="tony2"
-#     # collector_endpoint=14268
-# )
 
-# processor2 = BatchSpanProcessor(jaeger_exporter2)
-# provider.add_span_processor(processor2)
-
-# trace.set_tracer_provider(provider)
 # -------------python flask app----------------
 app = Flask(__name__, template_folder='templates')
 FlaskInstrumentor().instrument_app(app)
@@ -127,7 +121,7 @@ def index():
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)
         # logger.info('trace_id=%(trace_id)s span_id=%(span_id)s resource.service.name=flask-app trace_sampled=true Hello world')
-        logger.info('GET: 200 / '+'tracing traceid: '+trace_id+'tracing spanid: '+span_id)
+        logger.info('GET: 200 /')
         # logging.info("User successfully authenticated", extra={"trace_id": trace_id, "span_id": span_id,"resource.service.name":"flask-app"})
         return render_template('home.html')
 @app.route('/Taipei',methods=["GET"])
@@ -137,7 +131,7 @@ def Taipei_navigate():
         # #scope.span.set_tag('location','Taipei')
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)
-        logger.info('GET: 200 /Taipei/ '+'traceid: '+trace_id+' spanid: '+span_id)
+        logger.info('GET: 200 /Taipei/ ')
         
         return render_template('taipei.html')
 @app.route('/Yilan',methods=["GET"])
@@ -147,7 +141,7 @@ def Yilan_navigate():
         # #scope.span.set_tag('location','Yilan')
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)
-        logger.info('GET: 200 /Yilan '+'traceid: '+trace_id+' spanid: '+span_id)
+        logger.info('GET: 200 /Yilan ')
         return render_template('Yilan.html')
 @app.route('/Hualien',methods=["GET","POST"])
 def Hualien_navigate():
@@ -161,7 +155,7 @@ def Hualien_navigate():
         #     print(trace_id,span_id)
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)
-        logger.info('GET: 200 /Hualien '+'traceid: '+trace_id+' spanid: '+span_id)
+        logger.info('GET: 200 /Hualien ')
         # logging.info('GET: 200 /Hualien ', extra={"trace_id": trace_id, "span_id": span_id})
         
         if request.method == "POST":
@@ -186,8 +180,7 @@ def Hualien_navigate():
                         child_span.add_event("SendEmailLatency", {
                             "latency": str(end_time-start_time),
                         })
-                        logger.info('GET:200 /Hualien sending recommendation emails to users'
-                        +' traceid: '+trace_id+' spanid: '+span_id)
+                        logger.info('GET:200 /Hualien sending recommendation emails to users')
                     except:
                         status_code = trace.StatusCode.ERROR
                         status_description = "Emails can't be sent to end users"
@@ -223,8 +216,7 @@ def Hualien_navigate():
                             "latency": str(end_time-start_time),
                         })
                         fig_store.fig = fig_stars
-                        logger.info('GET:200 /Hualien crawling items to users'
-                        +' traceid: '+trace_id+' spanid: '+span_id)
+                        logger.info('GET:200 /Hualien crawling items to users')
                         return render_template('Hualien.html',figstars = fig_store.fig_back(),click=fig_store.set_back(),send_click = click_store.set_back()) 
                     except CustomError as e:
                         status_code = trace.StatusCode.ERROR
@@ -256,7 +248,7 @@ def Hualien_google(name):
         #     print(trace_id,span_id)
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)  
-        logger.info('GET:200 /Hualien/google/'+name+' '+'traceid: '+trace_id+' spanid: '+span_id)
+        logger.info('GET:200 /Hualien/google/'+name)
         address = "https://www.google.com/search?q="+name
         return redirect(address)
 @app.route('/Hualien/spot/', methods=["GET","POST"])
@@ -273,7 +265,7 @@ def Hualien_spot():
         })
     
     trace_id,span_id = GetTraceSpanID(span)  
-    logger.info('GET: 200 /Hualien/spot '+'traceid: '+trace_id+' spanid: '+span_id)
+    logger.info('GET: 200 /Hualien/spot ')
 
     if request.method == "POST":
         # with tracer.start_active_span('Hualien_city_spot',child_of='tourism') as scope:
@@ -281,7 +273,7 @@ def Hualien_spot():
             # scope.span.log_kv({'event':'post'})
             another = []
             task_content = request.form['content']
-            logger.info('POST: 200 /Hualien/spot FilterAll'+'traceid: '+trace_id+' spanid: '+span_id)
+            logger.info('POST: 200 /Hualien/spot FilterAll')
             
             with tracer.start_as_current_span('QueryAll') as child_span:
                 start_time = time.time()
