@@ -94,10 +94,10 @@ services:
     - 16686:16686
     - 14250:14250
     - 6831:6831/udp
-    environment:
-      - SPAN_STORAGE_TYPE=elasticsearch
-      - ES_SERVER_URLS=http://elasticsearch:9200
-      - LOG_LEVEL=info
+    # environment:
+    #   - SPAN_STORAGE_TYPE=elasticsearch
+    #   - ES_SERVER_URLS=http://elasticsearch:9200
+    #   - LOG_LEVEL=info
     # volumes:
     #   - Jaeger-vol:/var/lib/jaeger
 
@@ -106,9 +106,11 @@ services:
     user: root
     build:
       context: ./fluentd
-    image: fluentd
+    #image: fluentd
     # depends_on:
     #   - elasticsearch
+    links:
+      - "elasticsearch"
     volumes:
     # - ./file:/fluentd/log/files/ #Example: Reading logs from a file
     #- /var/lib/docker/containers:/fluentd/log/containers # Example: Reading docker logs
@@ -124,8 +126,33 @@ services:
     logging:
       driver: "local"
   
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.2.2
+  #   container_name: elasticsearch
+  #   environment:
+  #     - "discovery.type=single-node"
+  #     - xpack.security.enabled=false
+  #   expose:
+  #     - "9201"
+  #   networks:
+  #     - tracing
+  #   ports:
+  #     - "9201:9200"
+  # kibana:
+  #   image: docker.elastic.co/kibana/kibana:8.2.2
+  #   container_name: kibana
+  #   environment:
+  #     - ELASTICSEARCH_HOSTS="http://elasticsearch:9200"
+  #     - ELASTICSEARCH_URL="http://elasticsearch:9200"
+  #   links:
+  #     - "elasticsearch"
+  #   networks:
+  #     - tracing
+  #   ports:
+  #     - "5600:5601"
+
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.2.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1
     container_name: elasticsearch
     environment:
       - "discovery.type=single-node"
@@ -137,7 +164,7 @@ services:
     ports:
       - "9201:9200"
   kibana:
-    image: docker.elastic.co/kibana/kibana:8.2.2
+    image: docker.elastic.co/kibana/kibana:7.13.1
     container_name: kibana
     environment:
       - ELASTICSEARCH_HOSTS="http://elasticsearch:9200"
@@ -148,6 +175,8 @@ services:
       - tracing
     ports:
       - "5600:5601"
+
+
   # jaeger-query:
   #   image: jaegertracing/all-in-one:latest
   #   command: query
