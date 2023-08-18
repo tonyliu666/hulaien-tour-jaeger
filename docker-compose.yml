@@ -148,6 +148,17 @@ services:
       - tracing
     ports:
       - "5600:5601"
+  # jaeger-query:
+  #   image: jaegertracing/all-in-one:latest
+  #   command: query
+  #   ports:
+  #     - "16687:16687"
+  #   environment:
+  #     - SPAN_STORAGE_TYPE=elasticsearch
+  #     - ES_SERVER_URLS=http://elasticsearch:9200
+  #     - LOG_LEVEL=info  
+  #   networks:
+  #     - tracing
 volumes:
   Data-volume:
   
