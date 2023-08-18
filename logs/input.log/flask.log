@@ -1793,3 +1793,33 @@
 2023-08-18 10:22:45,039 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [18/Aug/2023 10:22:45] "GET / HTTP/1.1" 200 -
 2023-08-18 10:22:50,174 INFO trace_id=263ac8d5894d5827f6bd7a11e7dec138 span_id=8f7d4dee77569b88 resource.service.name=flask-app trace_sampled=True GET: 200 /
 2023-08-18 10:22:50,176 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [18/Aug/2023 10:22:50] "GET / HTTP/1.1" 200 -
+2023-08-18 10:22:55,313 INFO trace_id=de4721451ff06f5e3c46645db0d54c04 span_id=4391bd5fb056305d resource.service.name=flask-app trace_sampled=True GET: 200 /
+2023-08-18 10:22:55,314 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [18/Aug/2023 10:22:55] "GET / HTTP/1.1" 200 -
+2023-08-18 10:23:00,457 INFO trace_id=28ee209497bc55e15cc5b73ca5e283d8 span_id=de1d4966b64846db resource.service.name=flask-app trace_sampled=True GET: 200 /
+2023-08-18 10:23:00,459 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [18/Aug/2023 10:23:00] "GET / HTTP/1.1" 200 -
+2023-08-18 10:23:05,598 INFO trace_id=35cf305c483db5ff77b7cbef68bdd690 span_id=b1db505ea24b06a4 resource.service.name=flask-app trace_sampled=True GET: 200 /
+2023-08-18 10:23:05,599 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [18/Aug/2023 10:23:05] "GET / HTTP/1.1" 200 -
+2023-08-18 10:23:10,734 INFO trace_id=fddee0a9b64ad6877f02634dec0dc609 span_id=e79c1da7738ad761 resource.service.name=flask-app trace_sampled=True GET: 200 /
+2023-08-18 10:23:10,735 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [18/Aug/2023 10:23:10] "GET / HTTP/1.1" 200 -
+2023-08-18 10:23:15,881 INFO trace_id=c69d912a31efc4d51d5918749e0ff198 span_id=216f20e13d85cf50 resource.service.name=flask-app trace_sampled=True GET: 200 /
+2023-08-18 10:23:15,883 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [18/Aug/2023 10:23:15] "GET / HTTP/1.1" 200 -
+2023-08-18 10:23:21,012 INFO trace_id=8628aaa40b714309d4fa8018e5824a61 span_id=7c4cde9fbe4edc94 resource.service.name=flask-app trace_sampled=True GET: 200 /
+2023-08-18 10:23:21,013 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [18/Aug/2023 10:23:21] "GET / HTTP/1.1" 200 -
+2023-08-18 10:23:26,144 INFO trace_id=d0aa56fe60b35cbe6f7f1b19b1f3b1a0 span_id=85521376c15f4e2c resource.service.name=flask-app trace_sampled=True GET: 200 /
+2023-08-18 10:23:26,146 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [18/Aug/2023 10:23:26] "GET / HTTP/1.1" 200 -
+2023-08-18 10:23:31,287 INFO trace_id=d6fbeac0925259912eb6a62598066a28 span_id=2b9447da86a93f11 resource.service.name=flask-app trace_sampled=True GET: 200 /
+2023-08-18 10:23:31,289 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [18/Aug/2023 10:23:31] "GET / HTTP/1.1" 200 -
+2023-08-18 10:23:36,424 INFO trace_id=486a5908e8bed491b892680fa48c468d span_id=65199533802f38f3 resource.service.name=flask-app trace_sampled=True GET: 200 /
+2023-08-18 10:23:36,426 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [18/Aug/2023 10:23:36] "GET / HTTP/1.1" 200 -
+2023-08-18 10:23:41,563 INFO trace_id=45fb52ed35a1e0c5382082bf6ca68145 span_id=c6c286cc587576a9 resource.service.name=flask-app trace_sampled=True GET: 200 /
+2023-08-18 10:23:41,565 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [18/Aug/2023 10:23:41] "GET / HTTP/1.1" 200 -
+2023-08-18 10:23:46,706 INFO trace_id=5957b6c5480cee0c9953fac60f874755 span_id=66e105d2d03eb641 resource.service.name=flask-app trace_sampled=True GET: 200 /
+2023-08-18 10:23:46,707 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [18/Aug/2023 10:23:46] "GET / HTTP/1.1" 200 -
+2023-08-18 10:23:51,908 INFO trace_id=519efa3a8d3669d5d8e17687449113ba span_id=27b6b13a942f539f resource.service.name=flask-app trace_sampled=True GET: 200 /
+2023-08-18 10:23:51,910 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [18/Aug/2023 10:23:51] "GET / HTTP/1.1" 200 -
+2023-08-18 10:23:57,047 INFO trace_id=253546acf731f4ba3d963249179fe3d9 span_id=cb4a2264fccdb717 resource.service.name=flask-app trace_sampled=True GET: 200 /
+2023-08-18 10:23:57,048 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [18/Aug/2023 10:23:57] "GET / HTTP/1.1" 200 -
+2023-08-18 10:24:02,185 INFO trace_id=3150ee763f34210704c6a4276f9c3299 span_id=f6b9cbd111aa525e resource.service.name=flask-app trace_sampled=True GET: 200 /
+2023-08-18 10:24:02,187 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [18/Aug/2023 10:24:02] "GET / HTTP/1.1" 200 -
+2023-08-18 10:24:07,321 INFO trace_id=319cb1d044376f22b901682c70a50864 span_id=5ad6aab150cee923 resource.service.name=flask-app trace_sampled=True GET: 200 /
+2023-08-18 10:24:07,323 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [18/Aug/2023 10:24:07] "GET / HTTP/1.1" 200 -
