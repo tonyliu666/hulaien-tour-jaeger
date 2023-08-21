@@ -5657,3 +5657,103 @@ Traceback (most recent call last):
   File "/usr/local/lib/python3.10/site-packages/opentelemetry/exporter/jaeger/thrift/send.py", line 95, in emit
     udp_socket.sendto(buff, self.address)
 socket.gaierror: [Errno -3] Try again
+2023-08-21 15:50:50,015 INFO trace_id=35568cda278317a74184543be303b533 span_id=da3a484d3415a681 resource.service.name=flask-app trace_sampled=True GET: 200 /
+2023-08-21 15:50:50,017 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [21/Aug/2023 15:50:50] "GET / HTTP/1.1" 200 -
+Exception while exporting Span batch.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/sdk/trace/export/__init__.py", line 368, in _export_batch
+    self.span_exporter.export(self.spans_list[:idx])  # type: ignore
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/exporter/jaeger/thrift/__init__.py", line 225, in export
+    self._agent_client.emit(batch)
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/exporter/jaeger/thrift/send.py", line 95, in emit
+    udp_socket.sendto(buff, self.address)
+socket.gaierror: [Errno -3] Try again
+2023-08-21 15:50:52,004 ERROR trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False Exception while exporting Span batch.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/sdk/trace/export/__init__.py", line 368, in _export_batch
+    self.span_exporter.export(self.spans_list[:idx])  # type: ignore
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/exporter/jaeger/thrift/__init__.py", line 225, in export
+    self._agent_client.emit(batch)
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/exporter/jaeger/thrift/send.py", line 95, in emit
+    udp_socket.sendto(buff, self.address)
+socket.gaierror: [Errno -3] Try again
+2023-08-21 15:50:55,169 INFO trace_id=000cc14f47ed05e04ee6752e842fe4a4 span_id=a689e466121b4f47 resource.service.name=flask-app trace_sampled=True GET: 200 /
+2023-08-21 15:50:55,171 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [21/Aug/2023 15:50:55] "GET / HTTP/1.1" 200 -
+Exception while exporting Span batch.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/sdk/trace/export/__init__.py", line 368, in _export_batch
+    self.span_exporter.export(self.spans_list[:idx])  # type: ignore
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/exporter/jaeger/thrift/__init__.py", line 225, in export
+    self._agent_client.emit(batch)
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/exporter/jaeger/thrift/send.py", line 95, in emit
+    udp_socket.sendto(buff, self.address)
+socket.gaierror: [Errno -3] Try again
+2023-08-21 15:50:57,013 ERROR trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False Exception while exporting Span batch.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/sdk/trace/export/__init__.py", line 368, in _export_batch
+    self.span_exporter.export(self.spans_list[:idx])  # type: ignore
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/exporter/jaeger/thrift/__init__.py", line 225, in export
+    self._agent_client.emit(batch)
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/exporter/jaeger/thrift/send.py", line 95, in emit
+    udp_socket.sendto(buff, self.address)
+socket.gaierror: [Errno -3] Try again
+2023-08-21 15:51:00,301 INFO trace_id=0fe6b8df81fb32fc7171c6d891d539f4 span_id=7e4684983882e1a8 resource.service.name=flask-app trace_sampled=True GET: 200 /
+2023-08-21 15:51:00,305 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [21/Aug/2023 15:51:00] "GET / HTTP/1.1" 200 -
+Exception while exporting Span batch.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/sdk/trace/export/__init__.py", line 368, in _export_batch
+    self.span_exporter.export(self.spans_list[:idx])  # type: ignore
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/exporter/jaeger/thrift/__init__.py", line 225, in export
+    self._agent_client.emit(batch)
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/exporter/jaeger/thrift/send.py", line 95, in emit
+    udp_socket.sendto(buff, self.address)
+socket.gaierror: [Errno -3] Try again
+2023-08-21 15:51:02,025 ERROR trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False Exception while exporting Span batch.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/sdk/trace/export/__init__.py", line 368, in _export_batch
+    self.span_exporter.export(self.spans_list[:idx])  # type: ignore
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/exporter/jaeger/thrift/__init__.py", line 225, in export
+    self._agent_client.emit(batch)
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/exporter/jaeger/thrift/send.py", line 95, in emit
+    udp_socket.sendto(buff, self.address)
+socket.gaierror: [Errno -3] Try again
+2023-08-21 15:51:05,454 INFO trace_id=bbd64f274e2e154c4debc2a35c16e68b span_id=b84c99b38fbdb1c1 resource.service.name=flask-app trace_sampled=True GET: 200 /
+2023-08-21 15:51:05,456 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [21/Aug/2023 15:51:05] "GET / HTTP/1.1" 200 -
+Exception while exporting Span batch.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/sdk/trace/export/__init__.py", line 368, in _export_batch
+    self.span_exporter.export(self.spans_list[:idx])  # type: ignore
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/exporter/jaeger/thrift/__init__.py", line 225, in export
+    self._agent_client.emit(batch)
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/exporter/jaeger/thrift/send.py", line 95, in emit
+    udp_socket.sendto(buff, self.address)
+socket.gaierror: [Errno -3] Try again
+2023-08-21 15:51:07,034 ERROR trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False Exception while exporting Span batch.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/sdk/trace/export/__init__.py", line 368, in _export_batch
+    self.span_exporter.export(self.spans_list[:idx])  # type: ignore
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/exporter/jaeger/thrift/__init__.py", line 225, in export
+    self._agent_client.emit(batch)
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/exporter/jaeger/thrift/send.py", line 95, in emit
+    udp_socket.sendto(buff, self.address)
+socket.gaierror: [Errno -3] Try again
+2023-08-21 15:51:10,599 INFO trace_id=5aaca1b328fafbe2676b4848d1de0279 span_id=18acf5e2fc372cda resource.service.name=flask-app trace_sampled=True GET: 200 /
+2023-08-21 15:51:10,601 INFO trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False 127.0.0.1 - - [21/Aug/2023 15:51:10] "GET / HTTP/1.1" 200 -
+Exception while exporting Span batch.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/sdk/trace/export/__init__.py", line 368, in _export_batch
+    self.span_exporter.export(self.spans_list[:idx])  # type: ignore
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/exporter/jaeger/thrift/__init__.py", line 225, in export
+    self._agent_client.emit(batch)
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/exporter/jaeger/thrift/send.py", line 95, in emit
+    udp_socket.sendto(buff, self.address)
+socket.gaierror: [Errno -3] Try again
+2023-08-21 15:51:12,042 ERROR trace_id=0 span_id=0 resource.service.name=flask-app trace_sampled=False Exception while exporting Span batch.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/sdk/trace/export/__init__.py", line 368, in _export_batch
+    self.span_exporter.export(self.spans_list[:idx])  # type: ignore
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/exporter/jaeger/thrift/__init__.py", line 225, in export
+    self._agent_client.emit(batch)
+  File "/usr/local/lib/python3.10/site-packages/opentelemetry/exporter/jaeger/thrift/send.py", line 95, in emit
+    udp_socket.sendto(buff, self.address)
+socket.gaierror: [Errno -3] Try again
