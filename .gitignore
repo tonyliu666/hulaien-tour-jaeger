@@ -2,4 +2,6 @@ myproject
 share
 Lib 
 __pycache__
-logs/*
+logs/input.log/*
+k8syaml/*
+istio-1.0.6/*

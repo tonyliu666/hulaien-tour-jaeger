@@ -42,6 +42,11 @@ services:
       sh -c "
       ./start-grid-standalone.sh
       "
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224 # Address of the Fluentd instance
+        tag: selenium
     # volumes:
     #   - "grid:/sel:rw"
   flask-web:
@@ -97,15 +102,16 @@ services:
     environment:
       - SPAN_STORAGE_TYPE=elasticsearch
       - ES_SERVER_URLS=http://elasticsearchJaeger:9200 # Elasticsearch server
+      # - ES_SERVER_URLS=http://elasticsearch:9200
       - COLLECTOR_ZIPKIN_HOST_PORT=:9411
       - ES_TAGS_AS_FIELDS_ALL=true 
+    
     # environment:
     #   - SPAN_STORAGE_TYPE=elasticsearch
     #   - ES_SERVER_URLS=http://elasticsearch:9200
     #   - LOG_LEVEL=info
     # volumes:
     #   - Jaeger-vol:/var/lib/jaeger
-
   fluentd:
     container_name: fluentd
     user: root
@@ -138,11 +144,11 @@ services:
       - "discovery.type=single-node"
       - xpack.security.enabled=false
     expose:
-      - "9201"
+      - "9200"
     networks:
       - tracing
     ports:
-      - "9201:9200"
+      - "9200:9200"
   elasticsearchJaeger:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1
     container_name: esjaeger
@@ -159,16 +165,17 @@ services:
     image: docker.elastic.co/kibana/kibana:7.13.1
     container_name: kibana
     environment:
-      - ELASTICSEARCH_HOSTS="http://elasticsearch:9200"
-      - ELASTICSEARCH_URL="http://elasticsearch:9200"
+      - ELASTICSEARCH_HOSTS=["http://elasticsearch:9200"]
+      # - ELASTICSEARCH_HOSTS=http://elasticsearch:9200,http://elasticsearchJaeger:9200
+      # - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_URL=["http://elasticsearch:9200"]
+      # - ELASTICSEARCH_URL=http://elasticsearch:9200
     links:
       - "elasticsearch"
     networks:
       - tracing
     ports:
-      - "5600:5601"
-
-
+      - "5601:5601"
   # jaeger-query:
   #   image: jaegertracing/all-in-one:latest
   #   command: query
