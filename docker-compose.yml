@@ -38,6 +38,8 @@ services:
       - chrome_net
       - tracing
     # add selenium to jaeger
+    depends_on:
+      - fluentd
     command: >
       sh -c "
       ./start-grid-standalone.sh
@@ -88,8 +90,11 @@ services:
       - turingmysql
       - chrome_net
       - tracing
-      # - flask
-      # - sel_net
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224 # Address of the Fluentd instance
+        tag: opentelemetry
   jaeger:
     container_name: Jaeger
     image: jaegertracing/all-in-one:latest
@@ -175,7 +180,7 @@ services:
     networks:
       - tracing
     ports:
-      - "5601:5601"
+      - "5600:5601"
   # jaeger-query:
   #   image: jaegertracing/all-in-one:latest
   #   command: query

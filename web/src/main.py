@@ -7,6 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 ########## opentelemetry
 from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 from opentelemetry import trace
+
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from opentelemetry.instrumentation.requests import RequestsInstrumentor
 from opentelemetry.sdk.trace import TracerProvider
@@ -15,6 +16,7 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor,ConsoleSpanExporte
 
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.instrumentation.logging import LoggingInstrumentor
+#from opentelemetry import metrics
 
 import logging
 import os,sys
@@ -25,9 +27,44 @@ from Crawler import selenium,store,fig_store,click_store
 from send_email import SendEmail,Value
 from util import GetCurrentTime
 from error import check_crawling_correct,CustomError
+import psutil
+
+# send the metrics to console exporter
+# from opentelemetry.sdk.metrics.export import (
+#     PeriodicExportingMetricReader,
+#     ConsoleMetricExporter
+# )
+# from opentelemetry.sdk.metrics.view import LastValueAggregation
+# from opentelemetry.sdk.metrics import Counter, MeterProvider
+# from opentelemetry.metrics import Observation, CallbackOptions
+
+# def get_cpu_usage_callback(_: CallbackOptions):
+#     for (number, percent) in enumerate(psutil.cpu_percent(percpu=True)):
+#         attributes = {"cpu_number": str(number)}
+#         yield Observation(percent, attributes)
+
+
+# aggregation_last_value = {Counter: LastValueAggregation()}
+# meter_provider = MeterProvider()
+# exporter = ConsoleMetricExporter()
+# set the metrics freshing time interval
+# reader = PeriodicExportingMetricReader(
+#     exporter,
+#     export_interval_millis=5_000,
+# )
+# provider = MeterProvider(metric_readers=[reader])
+# set_meter_provider(provider)
+# metrics.set_meter_provider(provider)
+
+# meter = meter_provider.get_meter(__name__)
+# cpu_gauge = meter.create_observable_gauge(
+#     callbacks=[get_cpu_usage_callback],
+#     name="cpu_percent",
+#     description="per-cpu usage",
+#     unit="1"
+# )
 
 log_file = '/var/log/applogs/flask.log'
-
 
 ## needs to  put these two lines front of the resource 
 # because: https://opentelemetry-python-contrib.readthedocs.io/en/latest/instrumentation/logging/logging.html#manually-calling-logging-basicconfig
@@ -41,9 +78,9 @@ tracer = trace.get_tracer(__name__)
 logger = logging.getLogger(__name__)
 
 # ---opentelenetry logger---
-telemetry_logger = logging.getLogger("opentelemetry")
-telemetry_handler = logging.FileHandler(log_file)
-telemetry_logger.addHandler(telemetry_handler)
+# telemetry_logger = logging.getLogger("opentelemetry")
+# telemetry_handler = logging.FileHandler(log_file)
+# telemetry_logger.addHandler(telemetry_handler)
 
 ## -------------jaeger exporter-------------------
 resource = Resource.create({"service.name": "flask-app"})
@@ -119,7 +156,13 @@ def index():
     # with tracer.start_active_span('home') as scope:
         # scope.span.log_kv({'message': 'this is the home page'})
         span = trace.get_current_span()
-        trace_id,span_id = GetTraceSpanID(span)
+        span.add_event("cpu_usage", {
+            "rate": psutil.cpu_percent(interval=None),
+        })
+        span.add_event("memory_usage",{
+             "rate":psutil.virtual_memory()[2]
+        })
+        # trace_id,span_id = GetTraceSpanID(span)
         # logger.info('trace_id=%(trace_id)s span_id=%(span_id)s resource.service.name=flask-app trace_sampled=true Hello world')
         logger.info('GET: 200 /')
         # logging.info("User successfully authenticated", extra={"trace_id": trace_id, "span_id": span_id,"resource.service.name":"flask-app"})
@@ -130,9 +173,14 @@ def Taipei_navigate():
         # scope.span.log_kv({'message': 'this is Taipei'})
         # #scope.span.set_tag('location','Taipei')
         span = trace.get_current_span()
-        trace_id,span_id = GetTraceSpanID(span)
-        logger.info('GET: 200 /Taipei/ ')
+        span.add_event("cpu_usage", {
+            "rate": psutil.cpu_percent(interval=None),
+        })
+        span.add_event("memory_usage",{
+             "rate":psutil.virtual_memory()[2]
+        })
         
+        logger.info('GET: 200 /Taipei/ ')
         return render_template('taipei.html')
 @app.route('/Yilan',methods=["GET"])
 def Yilan_navigate():
@@ -140,7 +188,12 @@ def Yilan_navigate():
         # scope.span.log_kv({'message': 'this is Yilan'})
         # #scope.span.set_tag('location','Yilan')
         span = trace.get_current_span()
-        trace_id,span_id = GetTraceSpanID(span)
+        span.add_event("cpu_usage", {
+            "rate": psutil.cpu_percent(interval=None),
+        })
+        span.add_event("memory_usage",{
+             "rate":psutil.virtual_memory()[2]
+        })
         logger.info('GET: 200 /Yilan ')
         return render_template('Yilan.html')
 @app.route('/Hualien',methods=["GET","POST"])
@@ -154,10 +207,15 @@ def Hualien_navigate():
         #     span_id = span.context.__getnewargs__()[1]
         #     print(trace_id,span_id)
         span = trace.get_current_span()
+        span.add_event("cpu_usage", {
+            "rate": psutil.cpu_percent(interval=None),
+        })
+        span.add_event("memory_usage",{
+             "rate":psutil.virtual_memory()[2]
+        })
         trace_id,span_id = GetTraceSpanID(span)
-        logger.info('GET: 200 /Hualien ')
+        logger.info('GET: 200 /Hualien '+'traceid: '+trace_id+' spanid: '+span_id)
         # logging.info('GET: 200 /Hualien ', extra={"trace_id": trace_id, "span_id": span_id})
-        
         if request.method == "POST":
             if request.form['s'] == "確定":
                 fig_store.set = True
@@ -172,6 +230,7 @@ def Hualien_navigate():
                 Email = request.form.get('email')
                 pack = [app,tour,Email]
                 with tracer.start_as_current_span('SendEmail') as child_span:
+                    logger.info("this is an errror")
                     child_span.set_attribute("span.creation_time", GetCurrentTime())
                     try:
                         start_time = time.time() 
@@ -188,8 +247,8 @@ def Hualien_navigate():
                         http_status_code = 502
                         child_span.set_attribute("http.response.status_code", http_status_code)
                         logger.warning('Fail /Hualien sending recommendation emails to endusers'
-                            +' traceid: '+trace_id+' spanid: '+span_id)
-                
+                        +' traceid: '+trace_id+' spanid: '+span_id)
+                    
             else:
                 value = request.form.get('OrderDay')
                 if value == "親子友善":
@@ -214,6 +273,12 @@ def Hualien_navigate():
                         end_time = time.time()
                         child_span.add_event("ShowOnScreenLatency", {
                             "latency": str(end_time-start_time),
+                        })
+                        child_span.add_event("cpu_usage", {
+                            "rate": psutil.cpu_percent(interval=None),
+                        })
+                        child_span.add_event("memory_usage",{
+                            "rate":psutil.virtual_memory()[2]
                         })
                         fig_store.fig = fig_stars
                         logger.info('GET:200 /Hualien crawling items to users')
@@ -248,6 +313,12 @@ def Hualien_google(name):
         #     print(trace_id,span_id)
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)  
+        span.add_event("cpu_usage", {
+            "rate": psutil.cpu_percent(interval=None),
+        })
+        span.add_event("memory_usage",{
+             "rate":psutil.virtual_memory()[2]
+        })
         logger.info('GET:200 /Hualien/google/'+name)
         address = "https://www.google.com/search?q="+name
         return redirect(address)
@@ -260,11 +331,16 @@ def Hualien_spot():
         start_time = time.time()
         data = Todo.query.filter_by(loc='花蓮市').all()
         end_time = time.time()
-        child_span.add_event( "HualienCity", {
+        child_span.add_event("HualienCity", {
             "latency": str(end_time-start_time),
         })
-    
-    trace_id,span_id = GetTraceSpanID(span)  
+        child_span.add_event("cpu_usage", {
+            "rate": psutil.cpu_percent(interval=None),
+        })
+        child_span.add_event("memory_usage",{
+             "rate":psutil.virtual_memory()[2]
+        })
+     
     logger.info('GET: 200 /Hualien/spot ')
 
     if request.method == "POST":
@@ -282,17 +358,17 @@ def Hualien_spot():
                     if todo.title == task_content:
                         another.append(todo.id)
                 end_time = time.time()
-                child_span.add_event( "QueryAllSpots", {
+                child_span.add_event("QueryAllSpots", {
                     "latency": str(end_time-start_time),
+                })
+                child_span.add_event("cpu_usage", {
+                    "rate": psutil.cpu_percent(interval=None),
+                })
+                child_span.add_event("memory_usage",{
+                    "rate":psutil.virtual_memory()[2]
                 })
             return redirect(url_for('Hualien_lookup',another = another))
     else: 
-        # copy_data = Todo.query.all()
-        # if len(another) != 0 :
-        #     return render_template('Hualien_spot.html',data = another)
-        # else: 
-        #     print(copy_data,file=sys.stderr)
-        #     return render_template('Hualien_spot.html',data = copy_data)
         # with tracer.start_active_span('Hualien_city_spot',child_of='tourism') as scope:
             # scope.span.log_kv({'message':'print_all_hualiencity_spot'})
             # scope.span.log_kv({'event':'get'})
@@ -313,6 +389,12 @@ def Hualien_lookup():
         #     span_id = span.context.__getnewargs__()[1]
         #     print(trace_id,span_id)
         span = trace.get_current_span()
+        span.add_event("cpu_usage", {
+            "rate": psutil.cpu_percent(interval=None),
+        })
+        span.add_event("memory_usage",{
+             "rate":psutil.virtual_memory()[2]
+        })
         trace_id,span_id = GetTraceSpanID(span)  
         logger.info('GET: 200 /Hualien/spot/loc '+'traceid: '+trace_id+' spanid: '+span_id)
         return render_template('Hualien_spot.html',data = data)
@@ -321,6 +403,12 @@ def Hualien_hotel():
     # with tracer.start_active_span('Hualien_hotel',child_of='Hualien_city_spot'):
         url = 'https://www.booking.com/searchresults.zh-tw.html?label=gen173nr-1DCAEoggI46AdIM1gEaOcBiAEBmAEwuAEXyAEM2AED6AEBiAIBqAIDuAK7zuCWBsACAdICJDcyNDQyZWYxLWY2OTktNGJhZC1iNjEzLTE1NjM0OTFlOTg5MtgCBOACAQ&sid=80c3dd2e865839ba50f84a6b88e186fd&sb=1&sb_lp=1&src=index&src_elem=sb&error_url=https%3A%2F%2Fwww.booking.com%2Findex.zh-tw.html%3Flabel%3Dgen173nr-1DCAEoggI46AdIM1gEaOcBiAEBmAEwuAEXyAEM2AED6AEBiAIBqAIDuAK7zuCWBsACAdICJDcyNDQyZWYxLWY2OTktNGJhZC1iNjEzLTE1NjM0OTFlOTg5MtgCBOACAQ%26sid%3D80c3dd2e865839ba50f84a6b88e186fd%26sb_price_type%3Dtotal%26%26&ss=%E8%8A%B1%E8%93%AE&is_ski_area=0&checkin_year=&checkin_month=&checkout_year=&checkout_month=&group_adults=2&group_children=0&no_rooms=1&b_h4u_keep_filters=&from_sf=1&ss_raw=%E8%8A%B1%E8%93%AE&search_pageview_id=f57570de8fad009e'
         span = trace.get_current_span()
+        span.add_event("cpu_usage", {
+            "rate": psutil.cpu_percent(interval=None),
+        })
+        span.add_event("memory_usage",{
+             "rate":psutil.virtual_memory()[2]
+        })
         trace_id,span_id = GetTraceSpanID(span)  
         logger.info('GET: 200 booking /Hualien/hotel '+'traceid: '+trace_id+' spanid: '+span_id)
         return redirect(url)
@@ -337,6 +425,12 @@ def Hualien_food():
         #     span_id = span.context.__getnewargs__()[1]
         #     print(trace_id,span_id)
         span = trace.get_current_span()
+        span.add_event("cpu_usage", {
+            "rate": psutil.cpu_percent(interval=None),
+        })
+        span.add_event("memory_usage",{
+             "rate":psutil.virtual_memory()[2]
+        })
         trace_id,span_id = GetTraceSpanID(span)  
         logger.info('GET: 200 /Hualien/food '+'traceid: '+trace_id+' spanid: '+span_id)
     
@@ -349,6 +443,12 @@ def Hualien_traffic():
         #     trace_id = span.context.trace_id
         #     span_id = span.context.span_id
         span = trace.get_current_span()
+        span.add_event("cpu_usage", {
+            "rate": psutil.cpu_percent(interval=None),
+        })
+        span.add_event("memory_usage",{
+             "rate":psutil.virtual_memory()[2]
+        })
         trace_id,span_id = GetTraceSpanID(span)  
         logger.info('GET: 200 /Hualien/transportation '+'traceid: '+trace_id+' spanid: '+span_id)
         logger.warn('---testing--- ')
@@ -369,6 +469,12 @@ def all_lookup():
             "latency": str(end_time-start_time),
         })
     span = trace.get_current_span()
+    span.add_event("cpu_usage", {
+         "rate": psutil.cpu_percent(interval=None),
+    })
+    span.add_event("memory_usage",{
+        "rate":psutil.virtual_memory()[2]
+    })
     trace_id,span_id = GetTraceSpanID(span)  
     logger.info('GET: 200 /Hualien/全部 '+'traceid: '+trace_id+' spanid: '+span_id)
     
@@ -385,6 +491,12 @@ def hualien_lookup():
             end_time = time.time()
             child_span.add_event("QueryHualienCityData", {
                 "latency": str(end_time-start_time),
+            })
+            child_span.add_event("cpu_usage", {
+                "rate": psutil.cpu_percent(interval=None),
+            })
+            child_span.add_event("memory_usage",{
+                "rate":psutil.virtual_memory()[2]
             })
         result = Todo.query.filter_by(loc='花蓮市').all() #已 return全部的花蓮市景點加入進來
         span = trace.get_current_span()
@@ -405,6 +517,12 @@ def yuli_lookup():
             child_span.add_event("Query玉里鎮Data", {
                 "latency": str(end_time-start_time),
             })
+            child_span.add_event("cpu_usage", {
+                "rate": psutil.cpu_percent(interval=None),
+            })
+            child_span.add_event("memory_usage",{
+                "rate":psutil.virtual_memory()[2]
+            })
         # result = Todo.query.filter_by(loc='玉里鎮').all() 
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)  
@@ -421,8 +539,15 @@ def kongfu_lookup():
             result = Todo.query.filter_by(loc='光復鄉').all() 
             end_time = time.time()
             child_span.add_event("Query光復鄉Data", {
-                "latency": str(end_time-start_time),
-        })
+                "latency": str(end_time-start_time)
+            }
+            )
+            child_span.add_event("cpu_usage", {
+                "rate": psutil.cpu_percent(interval=None),
+            })
+            child_span.add_event("memory_usage",{
+                "rate":psutil.virtual_memory()[2]
+            })
         span = trace.get_current_span()
         trace_id,span_id = GetTraceSpanID(span)  
         logger.info('GET: 200 /Hualien/光復鄉 '+'traceid: '+trace_id+' spanid: '+span_id)
@@ -616,13 +741,19 @@ def plot_routing(link_name,title):
     #    scope.span.log_kv({'event':'location_intordoction'})
         link_name = "https://www.travelking.com.tw/tourguide/hualien/" + link_name
         try:
+            span = trace.get_current_span()
+            span.add_event("cpu_usage", {
+                "rate": psutil.cpu_percent(interval=None),
+            })
+            span.add_event("memory_usage",{
+                "rate":psutil.virtual_memory()[2]
+            })
             data = crawl(link_name)
             data = data.data(link_name)
             data.append(title)
             data.append(len(data))
             store.List = data 
             
-            span = trace.get_current_span()
             trace_id,span_id = GetTraceSpanID(span)  
             logger.info('GET: 200 /<title>/<link_name> '+'traceid: '+trace_id+' spanid: '+span_id)
             
@@ -639,6 +770,12 @@ def booking(variable):
         variable = re.sub('[a-zA-Z]',"",variable)
         variable = re.sub('[1-9]',"",variable)
         span = trace.get_current_span()
+        span.add_event("cpu_usage", {
+            "rate": psutil.cpu_percent(interval=None),
+        })
+        span.add_event("memory_usage",{
+            "rate":psutil.virtual_memory()[2]
+        })
         trace_id,span_id = GetTraceSpanID(span)
         with tracer.start_as_current_span('BookingWebSiteFor'+variable) as child_span:
             child_span.set_attribute("span.creation_time", GetCurrentTime())
@@ -646,7 +783,7 @@ def booking(variable):
                 start_time = time.time() 
                 sel = selenium(variable).data(variable)
                 end_time = time.time()
-                child_span.add_event("SendEmailLatency", {
+                child_span.add_event("Crawlyourhotel", {
                     "latency": str(end_time-start_time),
                 })
                 logger.info('GET: 200 /booking/'+variable+ ' traceid: '+trace_id+' spanid: '+span_id)
@@ -656,7 +793,7 @@ def booking(variable):
                 status_code = trace.StatusCode.ERROR
                 status_description = "Selenium container may failed,you need to repair it"
                 child_span.set_status(status_code, status_description)
-                http_status_code = 404
+                http_status_code = 500
                 child_span.set_attribute("http.response.status_code", http_status_code)
                 logger.critical('---your selenium crawling is malfunctioning ---')
                 return render_template('introduction.html',data = None,sel=None,text =None,set=False)

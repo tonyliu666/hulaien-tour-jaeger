@@ -18,6 +18,7 @@ RUN pip install opentelemetry-api
 RUN pip install opentelemetry-sdk
 RUN pip install opentelemetry-instrumentation-flask
 RUN pip install opentelemetry-instrumentation-requests
+RUN pip install psutil 
 # RUN pip install jaeger_client
 # opentelemtry-distro install API,SDK
 # for auto instrumentation
